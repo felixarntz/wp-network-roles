@@ -33,7 +33,7 @@ function wpnr_add_hooks() {
 	add_action( 'setup_theme', 'wpnr_setup_wp_network_roles', 1 );
 	add_action( 'pre_user_query', 'wpnr_support_network_role_in_user_query', 10, 1 );
 }
-add_action( 'plugins_loaded', 'wpnr_add_hooks' );
+add_action( 'plugins_loaded', 'wpnr_add_hooks', 9 );
 
 function wpnr_support_network_role_in_user_query( $query ) {
 	global $wpdb;

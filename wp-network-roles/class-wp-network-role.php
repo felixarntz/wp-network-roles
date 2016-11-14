@@ -46,7 +46,7 @@ class WP_Network_Role extends WP_Role {
 	}
 
 	/**
-	 * Determines whether the  networkrole has the given capability.
+	 * Determines whether the  network role has the given capability.
 	 *
 	 * The capabilities is passed through the {@see 'network_role_has_cap'} filter.
 	 * The first parameter for the hook is the list of capabilities the class

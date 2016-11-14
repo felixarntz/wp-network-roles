@@ -128,7 +128,7 @@ class WP_Network_Roles extends WP_Roles {
 		$this->roles[ $role ] = array(
 			'name' => $display_name,
 			'capabilities' => $capabilities
-			);
+		);
 		if ( $this->use_db ) {
 			update_network_option( $this->network_id, $this->role_key, $this->roles );
 		}
