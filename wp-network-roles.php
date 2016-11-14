@@ -159,18 +159,37 @@ function wpnr_support_network_role_in_user_query( $query ) {
 function wpnr_setup_wp_network_roles() {
 	$GLOBALS['wp_network_roles'] = new WP_Network_Roles();
 
-	// Only include custom network admin functionality if the global is not already overridden manually.
-	if ( ! isset( $GLOBALS['super_admins'] ) ) {
-		$GLOBALS['_wpnr_override_super_admins'] = true;
+	wpnr_maybe_setup_and_migrate();
 
-		wpnr_maybe_setup_and_migrate();
-		wpnr_set_super_admins();
-	} else {
-		wpnr_maybe_setup_and_migrate();
-	}
+	//TODO: This can be removed once all the `is_super_admin()` checks are gone.
+	add_filter( 'pre_site_option_site_admins', 'wpnr_get_network_administrator_logins', 10, 3 );
+
+	//TODO: These are for support of current network administrator functionality. Can be removed at some point.
+	add_action( 'granted_super_admin', 'wpnr_grant_network_administrator', 10, 1 );
+	add_action( 'revoked_super_admin', 'wpnr_revoke_network_administrator', 10, 1 );
 
 	// Hook from `wp-multi-network` plugin.
 	add_action( 'switch_network', 'wpnr_switched_network', 10, 2 );
+}
+
+function wpnr_get_network_administrator_logins( $default, $option, $network_id ) {
+	$users = get_users( array(
+		'blog_id'      => 0,
+		'network_id'   => $network_id,
+		'network_role' => 'administrator',
+	) );
+
+	return wp_list_pluck( $users, 'user_login' );
+}
+
+function wpnr_grant_network_administrator( $user_id ) {
+	$user = get_userdata( $user_id );
+	$user->add_network_role( 'administrator' );
+}
+
+function wpnr_revoke_network_administrator( $user_id ) {
+	$user = get_userdata( $user_id );
+	$user->remove_network_role( 'administrator' );
 }
 
 function wpnr_switched_network( $new_network_id, $old_network_id ) {
@@ -180,20 +199,7 @@ function wpnr_switched_network( $new_network_id, $old_network_id ) {
 
 	wp_network_roles()->reinit();
 
-	if ( isset( $GLOBALS['_wpnr_override_super_admins'] ) ) {
-		wpnr_maybe_setup_and_migrate();
-		wpnr_set_super_admins();
-	}
-}
-
-function wpnr_set_super_admins() {
-	$users = get_users( array(
-		'blog_id'      => 0,
-		'network_id'   => $GLOBALS['wpdb']->siteid,
-		'network_role' => 'administrator',
-	) );
-
-	$GLOBALS['super_admins'] = wp_list_pluck( $users, 'user_login' );
+	wpnr_maybe_setup_and_migrate();
 }
 
 function wpnr_maybe_setup_and_migrate() {
