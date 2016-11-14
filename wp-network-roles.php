@@ -221,14 +221,20 @@ function wpnr_maybe_setup_and_migrate() {
 }
 
 function wpnr_populate_roles() {
-	add_network_role( 'administrator', __( 'Network Administrator' ) );
+	if ( get_network_role( 'administrator' ) ) {
+		return;
+	}
 
-	$role = get_network_role( 'administrator' );
-	//TODO: This list is definitely not complete.
-	$role->add_cap( 'manage_network' );
-	$role->add_cap( 'manage_sites' );
-	$role->add_cap( 'manage_network_users' );
-	$role->add_cap( 'manage_network_themes' );
-	$role->add_cap( 'manage_network_plugins' );
-	$role->add_cap( 'manage_network_options' );
+	$site_administrator = get_role( 'administrator' );
+
+	$network_administrator_capabilities = array_merge( $site_administrator->capabilities, array_fill_keys( array(
+		'manage_network',
+		'manage_sites',
+		'manage_network_users',
+		'manage_network_themes',
+		'manage_network_plugins',
+		'manage_network_options',
+	), true ) );
+
+	add_network_role( 'administrator', __( 'Network Administrator' ), $network_administrator_capabilities );
 }
