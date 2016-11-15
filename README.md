@@ -8,6 +8,7 @@ Proof-of-Concept for implementing a real network-wide role system in WordPress C
 * enhances the `WP_User` class (by providing a `WP_User_With_Network_Roles` class which would become part of `WP_User` if the functionality was in Core)
 * uses user meta to store network-wide roles and capabilities (in a similar fashion like it stores site roles and capabilities)
 * allows to query users for specific network roles or whether they are part of a network
+* adjusts the network users list table to contain role filters and a column
 * introduces one initial network role "administrator"
 * automatically migrates the "super admins" stored in the network option into the user meta-based system
 * supports the WP Multi Network plugin when switching networks
