@@ -8,6 +8,7 @@ Author:      Felix Arntz
 Author URI:  http://leaves-and-love.net
 License:     GNU General Public License v2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
+Network:     True
  */
 
 if ( ! is_multisite() ) {
