@@ -26,6 +26,9 @@ require_once dirname( __FILE__ ) . '/wp-network-roles/class-wp-user-with-network
 require_once dirname( __FILE__ ) . '/wp-network-roles/functions.php';
 require_once dirname( __FILE__ ) . '/wp-network-roles/user.php';
 
+// The following would be incorporated into the WP_MS_Users_List_Table class if it was in Core.
+require_once dirname( __FILE__ ) . '/wp-network-roles/admin/ms-users-list-table.php';
+
 // The following file contains functions that override Core functions. Cheatin, huh?
 require_once dirname( __FILE__ ) . '/wp-network-roles/pluggable.php';
 

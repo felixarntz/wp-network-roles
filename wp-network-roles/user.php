@@ -7,6 +7,21 @@
  * @since 4.8.0
  */
 
+/**
+ * Counts number of network users who have each of the user roles.
+ *
+ * Assumes there are neither duplicated nor orphaned capabilities meta_values.
+ * Assumes role names are unique phrases. Same assumption made by WP_User_Query::prepare_query()
+ * Using $strategy = 'time' this is CPU-intensive and should handle around 10^7 users.
+ * Using $strategy = 'memory' this is memory-intensive and should handle around 10^5 users, but see WP Bug #12257.
+ *
+ * @since 4.8.0
+ *
+ * @global wpdb $wpdb WordPress database abstraction object.
+ *
+ * @param string $strategy 'time' or 'memory'
+ * @return array Includes a grand total and an array of counts indexed by role strings.
+ */
 function count_network_users( $strategy = 'time' ) {
 	global $wpdb;
 
@@ -68,6 +83,44 @@ function count_network_users( $strategy = 'time' ) {
 	}
 
 	return $result;
+}
+
+/**
+ * Gets the user IDs of all users with no role on this network.
+ *
+ * @since 4.8.0
+ *
+ * @global wpdb $wpdb WordPress database abstraction object.
+ *
+ * @return array Array of user IDs.
+ */
+function wp_get_users_with_no_network_role() {
+	global $wpdb;
+
+	$network_prefix = $wpdb->base_prefix . 'network_' . get_current_network_id() . '_';
+
+	$regex = implode( '|', array_keys( wp_network_roles()->get_names() ) );
+	$regex = preg_replace( '/[^a-zA-Z_\|-]/', '', $regex );
+
+	$users = $wpdb->get_col( $wpdb->prepare( "SELECT user_id FROM $wpdb->usermeta WHERE meta_key = '{$network_prefix}capabilities' AND meta_value NOT REGEXP %s", $regex ) );
+
+	return $users;
+}
+
+/**
+ * Translates a network role name.
+ *
+ * Since the role names are in the database and not in the source there
+ * are dummy gettext calls to get them into the POT file and this function
+ * properly translates them back.
+ *
+ * @since 4.8.0
+ *
+ * @param string $name The network role name.
+ * @return string Translated network role name on success, original name on failure.
+ */
+function translate_network_user_role( $name ) {
+	return translate_with_gettext_context( before_last_bar( $name ), 'Network user role' );
 }
 
 function wpnr_support_network_role_in_user_query( $query ) {
