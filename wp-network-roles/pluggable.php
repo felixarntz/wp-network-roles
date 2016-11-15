@@ -7,6 +7,7 @@
  * @since 4.8.0
  */
 
+if ( ! function_exists( 'wp_set_current_user' ) ) :
 function wp_set_current_user( $id, $name = '' ) {
 	global $current_user;
 
@@ -40,7 +41,9 @@ function wp_set_current_user( $id, $name = '' ) {
 
 	return $current_user;
 }
+endif;
 
+if ( ! function_exists( 'get_user_by' ) ) :
 function get_user_by( $field, $value ) {
 	$userdata = WP_User::get_data_by( $field, $value );
 
@@ -60,3 +63,4 @@ function get_user_by( $field, $value ) {
 
 	return $user;
 }
+endif;
