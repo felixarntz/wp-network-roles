@@ -35,6 +35,19 @@ function wpnr_add_hooks() {
 }
 add_action( 'plugins_loaded', 'wpnr_add_hooks', 9 );
 
+function wpnr_activate_everywhere( $plugins ) {
+	if ( isset( $plugins['wp-network-roles/wp-network-roles.php'] ) ) {
+		return $plugins;
+	}
+
+	$plugins['wp-network-roles/wp-network-roles.php'] = time();
+
+	return $plugins;
+}
+if ( did_action( 'muplugins_loaded' ) ) {
+	add_filter( 'pre_update_site_option_active_sitewide_plugins', 'wpnr_activate_everywhere', 10, 1 );
+}
+
 function wpnr_support_network_role_in_user_query( $query ) {
 	global $wpdb;
 
