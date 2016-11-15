@@ -14,10 +14,11 @@ Proof-of-Concept for implementing a real network-wide role system in WordPress C
 
 ## How to install
 
-It's recommended to use this as a must-use plugin. Download the ZIP and extract its contents directly into the `wp-content/mu-plugins` directory.
+The plugin can either be installed as a network-wide regular plugin or alternatively as a must-use plugin.
 
 ## Some background information
 
 The long-term plan is to only use the currently existing super-admin functionality for special access to everything (by providing the super admins with the `$super_admins` global). For network administrators (and possibly global administrators) dedicated role systems, similar to how they exist for site administrators, should be implemented. This plugin is a first take on this.
 
-See https://wordpress.slack.com/archives/core-multisite/p1470762377000454 for some discussion on the topic
+* Roadmap document: https://docs.google.com/document/d/1MWwwKmhBJookr5dEcYga4sBtCwvx-K8uSucBFx6SP9U/edit?usp=sharing
+* Background discussion on Slack: https://wordpress.slack.com/archives/core-multisite/p1470762377000454 and https://wordpress.slack.com/archives/core-multisite/p1478204143000046
