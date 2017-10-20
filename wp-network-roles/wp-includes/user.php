@@ -2,10 +2,194 @@
 /**
  * User functions for the network user roles API.
  *
- * @package WordPress
- * @subpackage Users
- * @since 4.8.0
+ * @package WPNetworkRoles
+ * @since 1.0.0
  */
+
+/**
+ * Gets the network roles for a user.
+ *
+ * @since 1.0.0
+ *
+ * @global wpdb $wpdb WordPress database abstraction object.
+ *
+ * @param int    $user_id    User ID.
+ * @param int    $network_id Optional. Network ID. Default is the current network ID.
+ */
+function nr_get_network_roles_for_user( $user_id, $network_id = 0 ) {
+	global $wpdb, $_nr_network_roles;
+
+	if ( ! $network_id ) {
+		$network_id = $wpdb->siteid;
+	}
+
+	$network_cap_key = $wpdb->base_prefix . 'network_' . $network_id . '_capabilities';
+
+	$network_roles = get_user_meta( $user_id, $network_cap_key, true );
+	if ( ! is_array( $network_roles ) ) {
+		return array();
+	}
+
+	return array_filter( $network_roles, array( wp_network_roles(), 'is_role' ) );
+}
+
+function _nr_get_network_role_caps_for_user( $user_id, $network_id = 0 ) {
+	global $wpdb, $_nr_network_role_data;
+
+	if ( ! $network_id ) {
+		$network_id = $wpdb->siteid;
+	}
+
+	$network_cap_key = $wpdb->base_prefix . 'network_' . $network_id . '_capabilities';
+
+	if ( ! isset( $_nr_network_role_data ) ) {
+		$_nr_network_role_data = array();
+	}
+
+	if ( ! isset( $_nr_network_role_data[ $user_id ] ) ) {
+		$_nr_network_role_data[ $user_id ] = array();
+	}
+
+	$_nr_network_role_data[ $user_id ]['caps'] = get_user_meta( $user_id, $network_cap_key, true );
+	if ( ! is_array( $_nr_network_role_data[ $user_id ]['caps'] ) ) {
+		$_nr_network_role_data[ $user_id ]['caps'] = array();
+	}
+
+	// TODO: Deal with the (fixed) core bug #36961.
+	$wp_network_roles = wp_network_roles();
+
+	$_nr_network_role_data[ $user_id ]['roles'] = array_filter( array_keys( $_nr_network_role_data[ $user_id ]['caps'] ), array( $wp_network_roles, 'is_role' ) );
+
+	//Build $allcaps from role caps, overlay user's $caps
+	$_nr_network_role_data[ $user_id ]['allcaps'] = array();
+	foreach ( (array) $_nr_network_role_data[ $user_id ]['roles'] as $role ) {
+		$the_role = $wp_network_roles->get_role( $role );
+		$_nr_network_role_data[ $user_id ]['allcaps'] = array_merge( (array) $_nr_network_role_data[ $user_id ]['allcaps'], (array) $the_role->capabilities );
+	}
+	$_nr_network_role_data[ $user_id ]['allcaps'] = array_merge( (array) $_nr_network_role_data[ $user_id ]['allcaps'], (array) $_nr_network_role_data[ $user_id ]['caps'] );
+
+	return $this->allcaps;
+}
+
+/**
+ * Adds a network role to a user.
+ *
+ * @since 1.0.0
+ *
+ * @global wpdb $wpdb WordPress database abstraction object.
+ *
+ * @param int    $user_id    User ID.
+ * @param string $role       Role to add to the user.
+ * @param int    $network_id Optional. Network ID. Default is the current network ID.
+ */
+function nr_add_network_role_for_user( $user_id, $role, $network_id = 0 ) {
+	global $wpdb;
+
+	if ( ! $network_id ) {
+		$network_id = $wpdb->siteid;
+	}
+
+	$network_cap_key = $wpdb->base_prefix . 'network_' . $network_id . '_capabilities';
+
+	$network_roles = get_user_meta( $user_id, $network_cap_key, true );
+	if ( ! is_array( $network_roles ) ) {
+		$network_roles = array();
+	}
+
+	$network_roles[ $role ] = true;
+
+	update_user_meta( $user_id, $network_cap_key, $network_roles );
+
+	/**
+	 * Fires immediately after the user has been given a new network role.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param int    $user_id The user ID.
+	 * @param string $role    The new role.
+	 */
+	do_action( 'add_network_user_role', $user_id, $role );
+}
+
+/**
+ * Removes a network role from a user.
+ *
+ * @since 1.0.0
+ *
+ * @global wpdb $wpdb WordPress database abstraction object.
+ *
+ * @param int    $user_id    User ID.
+ * @param string $role       Role to remove from the user.
+ * @param int    $network_id Optional. Network ID. Default is the current network ID.
+ */
+function nr_remove_network_role_for_user( $user_id, $role, $network_id = 0 ) {
+	global $wpdb;
+
+	if ( ! $network_id ) {
+		$network_id = $wpdb->siteid;
+	}
+
+	$network_cap_key = $wpdb->base_prefix . 'network_' . $network_id . '_capabilities';
+
+	$network_roles = get_user_meta( $user_id, $network_cap_key, true );
+	if ( ! is_array( $network_roles ) ) {
+		return;
+	}
+
+	if ( ! isset( $network_roles[ $role ] ) ) {
+		return;
+	}
+
+	unset( $network_roles[ $role ] );
+
+	update_user_meta( $user_id, $network_cap_key, $network_roles );
+
+	/**
+	 * Fires immediately after a network role as been removed from a user.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param int    $user_id The user ID.
+	 * @param string $role    The removed role.
+	 */
+	do_action( 'remove_network_user_role', $user_id, $role );
+}
+
+/**
+ * Sets a network role to a user.
+ *
+ * @since 1.0.0
+ *
+ * @global wpdb $wpdb WordPress database abstraction object.
+ *
+ * @param int    $user_id    User ID.
+ * @param string $role       Role to add to the user.
+ * @param int    $network_id Optional. Network ID. Default is the current network ID.
+ */
+function nr_set_network_role_for_user( $user_id, $role, $network_id = 0 ) {
+	global $wpdb;
+
+	if ( ! $network_id ) {
+		$network_id = $wpdb->siteid;
+	}
+
+	$network_cap_key = $wpdb->base_prefix . 'network_' . $network_id . '_capabilities';
+
+	$old_roles = get_user_meta( $user_id, $network_cap_key, true );
+
+	update_user_meta( $user_id, $network_cap_key, array( $role => true ) );
+
+	/**
+	 * Fires after the user's network role has changed.
+	 *
+	 * @since 4.8.0
+	 *
+	 * @param int    $user_id   The user ID.
+	 * @param string $role      The new role.
+	 * @param array  $old_roles An array of the user's previous roles.
+	 */
+	do_action( 'set_network_user_role', $user_id, $role, $old_roles );
+}
 
 /**
  * Counts number of network users who have each of the user roles.
@@ -243,3 +427,4 @@ function wpnr_support_network_role_in_user_query( $query ) {
 		}
 	}
 }
+add_action( 'pre_user_query', 'wpnr_support_network_role_in_user_query', 10, 1 );

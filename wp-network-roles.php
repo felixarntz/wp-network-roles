@@ -2,45 +2,95 @@
 /*
 Plugin Name: WP Network Roles
 Plugin URI:  https://github.com/felixarntz/wp-network-roles/
-Description: Implements actual network-wide user roles in WordPress.
+Description: Implements network-wide user roles in WordPress.
 Version:     1.0.0
 Author:      Felix Arntz
-Author URI:  http://leaves-and-love.net
+Author URI:  https://leaves-and-love.net
 License:     GNU General Public License v2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 Network:     True
+Text Domain: wp-network-roles
+Network:     true
+Tags:        network roles, network, multisite, multinetwork
+ */
+/**
+ * Plugin initialization file
+ *
+ * @package WPNetworkRoles
+ * @since 1.0.0
  */
 
 if ( ! is_multisite() ) {
 	return;
 }
 
-/* Load plugin files. */
+/**
+ * Initializes the plugin.
+ *
+ * Loads the required files.
+ *
+ * @since 1.0.0
+ */
+function nr_init() {
+	define( 'NR_PATH', plugin_dir_path( __FILE__ ) );
+	define( 'NR_URL', plugin_dir_url( __FILE__ ) );
 
-require_once dirname( __FILE__ ) . '/wp-network-roles/class-wp-network-role.php';
-require_once dirname( __FILE__ ) . '/wp-network-roles/class-wp-network-roles.php';
+	require_once( NR_PATH . 'wp-network-roles/wp-includes/class-wp-network-role.php' );
+	require_once( NR_PATH . 'wp-network-roles/wp-includes/class-wp-network-roles.php' );
+	require_once( NR_PATH . 'wp-network-roles/wp-includes/capabilities.php' );
+	require_once( NR_PATH . 'wp-network-roles/wp-includes/user.php' );
 
-// The following would be incorporated into the WP_User class if it was in Core.
-require_once dirname( __FILE__ ) . '/wp-network-roles/class-wp-user-with-network-roles.php';
+	if ( is_admin() ) {
+		require_once( NR_PATH . 'wp-network-roles/wp-admin/includes/wp-ms-users-list-table-tweaks.php' );
+	}
 
-require_once dirname( __FILE__ ) . '/wp-network-roles/functions.php';
-require_once dirname( __FILE__ ) . '/wp-network-roles/user.php';
-
-// The following would be incorporated into the WP_MS_Users_List_Table class if it was in Core.
-require_once dirname( __FILE__ ) . '/wp-network-roles/admin/ms-users-list-table.php';
-
-// The following file contains functions that override Core functions. Cheatin, huh?
-require_once dirname( __FILE__ ) . '/wp-network-roles/pluggable.php';
-
-/* Internal functions and hooks to bootstrap new functionality. */
-
-function wpnr_add_hooks() {
-	add_action( 'setup_theme', 'wpnr_setup_wp_network_roles', 1 );
-	add_action( 'pre_user_query', 'wpnr_support_network_role_in_user_query', 10, 1 );
+	if ( is_plugin_active( 'wp-multi-network/wpmn-loader.php' ) ) {
+		require_once( NR_PATH . 'wp-network-roles/multi-network-compat.php' );
+	}
 }
-add_action( 'plugins_loaded', 'wpnr_add_hooks', 9 );
 
-function wpnr_activate_everywhere( $plugins ) {
+/**
+ * Shows an admin notice if the WordPress version installed is not supported.
+ *
+ * @since 1.0.0
+ */
+function nr_requirements_notice() {
+	$plugin_file = plugin_basename( __FILE__ );
+	?>
+	<div class="notice notice-warning is-dismissible">
+		<p>
+			<?php printf(
+				__( 'Please note: WP Network Roles requires WordPress 4.8 or higher. <a href="%s">Deactivate plugin</a>.' ),
+				wp_nonce_url(
+					add_query_arg(
+						array(
+							'action'        => 'deactivate',
+							'plugin'        => $plugin_file,
+							'plugin_status' => 'all',
+						),
+						self_admin_url( 'plugins.php' )
+					),
+					'deactivate-plugin_' . $plugin_file
+				)
+			); ?>
+		</p>
+	</div>
+	<?php
+}
+
+/**
+ * Ensures that this plugin gets activated in every new network by filtering the `active_sitewide_plugins` option.
+ *
+ * @since 1.0.0
+ *
+ * @param array $plugins Array of plugin basenames as keys and time() as values.
+ * @return array Modified plugins array.
+ */
+function nr_activate_everywhere( $plugins ) {
+	if ( ! is_array( $plugins ) ) {
+		$plugins = array();
+	}
+
 	if ( isset( $plugins['wp-network-roles/wp-network-roles.php'] ) ) {
 		return $plugins;
 	}
@@ -49,95 +99,15 @@ function wpnr_activate_everywhere( $plugins ) {
 
 	return $plugins;
 }
-if ( did_action( 'muplugins_loaded' ) ) {
-	add_filter( 'pre_update_site_option_active_sitewide_plugins', 'wpnr_activate_everywhere', 10, 1 );
-}
 
-function wpnr_setup_wp_network_roles() {
-	$GLOBALS['wp_network_roles'] = new WP_Network_Roles();
+if ( version_compare( $GLOBALS['wp_version'], '4.8', '<' ) ) {
+	add_action( 'admin_notices', 'nr_requirements_notice' );
+	add_action( 'network_admin_notices', 'nr_requirements_notice' );
+} else {
+	add_action( 'plugins_loaded', 'nr_init' );
 
-	wpnr_maybe_setup_and_migrate();
-
-	//TODO: This can be removed once all the `is_super_admin()` checks are gone.
-	add_filter( 'pre_site_option_site_admins', 'wpnr_get_network_administrator_logins', 10, 3 );
-
-	//TODO: These are for support of current network administrator functionality. Can be removed at some point.
-	add_action( 'granted_super_admin', 'wpnr_grant_network_administrator', 10, 1 );
-	add_action( 'revoked_super_admin', 'wpnr_revoke_network_administrator', 10, 1 );
-
-	// Hook from `wp-multi-network` plugin.
-	add_action( 'switch_network', 'wpnr_switched_network', 10, 2 );
-}
-
-function wpnr_get_network_administrator_logins( $default, $option, $network_id ) {
-	$users = get_users( array(
-		'blog_id'      => 0,
-		'network_id'   => $network_id,
-		'network_role' => 'administrator',
-	) );
-
-	return wp_list_pluck( $users, 'user_login' );
-}
-
-function wpnr_grant_network_administrator( $user_id ) {
-	$user = get_userdata( $user_id );
-	$user->add_network_role( 'administrator' );
-}
-
-function wpnr_revoke_network_administrator( $user_id ) {
-	$user = get_userdata( $user_id );
-	$user->remove_network_role( 'administrator' );
-}
-
-function wpnr_switched_network( $new_network_id, $old_network_id ) {
-	if ( $new_network_id == $old_network_id ) {
-		return;
+	if ( did_action( 'muplugins_loaded' ) ) {
+		add_filter( 'site_option_active_sitewide_plugins', 'nr_activate_everywhere', 10, 1 );
+		add_filter( 'pre_update_site_option_active_sitewide_plugins', 'nr_activate_everywhere', 10, 1 );
 	}
-
-	wp_network_roles()->reinit();
-
-	wpnr_maybe_setup_and_migrate();
-}
-
-function wpnr_maybe_setup_and_migrate() {
-	$option = get_network_option( null, '_wpnr_migrated' );
-	if ( $option ) {
-		return;
-	}
-
-	wpnr_populate_roles();
-
-	$network_admin_logins = get_network_option( null, 'site_admins', array( 'admin' ) );
-
-	// TODO: We cannot adjust the return type of get_users() because there is no filter,
-	// so it's always unenhanced WP_User objects.
-	$network_admins = get_users( array(
-		'blog_id'   => 0,
-		'login__in' => $network_admin_logins,
-	) );
-	foreach ( $network_admins as $network_admin ) {
-		$network_admin = new WP_User_With_Network_Roles( $network_admin );
-		$network_admin->add_network_role( 'administrator' );
-	}
-
-	update_network_option( null, '_wpnr_migrated', '1' );
-}
-
-function wpnr_populate_roles() {
-	if ( get_network_role( 'administrator' ) ) {
-		return;
-	}
-
-	$site_administrator = get_role( 'administrator' );
-
-	$network_administrator_capabilities = array_merge( $site_administrator->capabilities, array_fill_keys( array(
-		'manage_network',
-		'manage_sites',
-		'manage_network_users',
-		'manage_network_themes',
-		'manage_network_plugins',
-		'manage_network_options',
-	), true ) );
-
-	add_network_role( 'administrator', __( 'Network Administrator' ), $network_administrator_capabilities );
 }
