@@ -2,11 +2,11 @@
 /**
  * User API: WP_Network_Roles class
  *
- * @package WordPress
- * @subpackage Users
- * @since 4.8.0
+ * @package WPNetworkRoles
+ * @since 1.0.0
  */
 
+if ( ! class_exists( 'WP_Network_Roles' ) ) :
 /**
  * Core class used to implement a network user roles API.
  *
@@ -21,21 +21,33 @@
  *    		)
  *     )
  *
- * TODO: If it was in Core, the retrieving/updating option processes of WP_Roles would be
- * moved into a separate protected method for easier replacement and less duplicate code
- * in a subclass like WP_Network_Roles.
- *
- * @since 4.8.0
+ * @since 1.0.0
  */
 class WP_Network_Roles extends WP_Roles {
 	/**
-	 * Network ID currently set for the network user roles API.
+	 * The network ID the roles are initialized for.
 	 *
-	 * @since 4.8.0
-	 * @access public
+	 * @since 1.0.0
 	 * @var int
 	 */
-	public $network_id = 0;
+	protected $network_id = 0;
+
+	/**
+	 * Constructor
+	 *
+	 * @since 1.0.0
+	 *
+	 * @global array $wp_network_user_roles Used to set the 'roles' property value.
+	 *
+	 * @param int $network_id Network ID to initialize roles for. Default is the current network.
+	 */
+	public function __construct( $network_id = null ) {
+		global $wp_network_user_roles;
+
+		$this->use_db = empty( $wp_network_user_roles );
+
+		$this->for_network( $network_id );
+	}
 
 	/**
 	 * Set up the object properties.
@@ -44,7 +56,7 @@ class WP_Network_Roles extends WP_Roles {
 	 * If the $wp_network_user_roles global is set, then it will
 	 * be used and the network role option will not be updated or used.
 	 *
-	 * @since 4.8.0
+	 * @since 1.0.0
 	 * @access protected
 	 *
 	 * @global array $wp_network_user_roles Used to set the 'roles' property value.
@@ -78,8 +90,7 @@ class WP_Network_Roles extends WP_Roles {
 	 * Recreates the network role objects. This is typically called only
 	 * after switching wpdb to a new network ID.
 	 *
-	 * @since 4.8.0
-	 * @access public
+	 * @since 1.0.0
 	 */
 	public function reinit() {
 		global $wpdb;
@@ -112,8 +123,7 @@ class WP_Network_Roles extends WP_Roles {
 	 * The capabilities are defined in the following format `array( 'read' => true );`
 	 * To explicitly deny a role a capability you set the value for that capability to false.
 	 *
-	 * @since 4.8.0
-	 * @access public
+	 * @since 1.0.0
 	 *
 	 * @param string $role Role name.
 	 * @param string $display_name Role display name.
@@ -140,8 +150,7 @@ class WP_Network_Roles extends WP_Roles {
 	/**
 	 * Remove role by name.
 	 *
-	 * @since 4.8.0
-	 * @access public
+	 * @since 1.0.0
 	 *
 	 * @param string $role Role name.
 	 */
@@ -165,8 +174,7 @@ class WP_Network_Roles extends WP_Roles {
 	/**
 	 * Add capability to role.
 	 *
-	 * @since 4.8.0
-	 * @access public
+	 * @since 1.0.0
 	 *
 	 * @param string $role Role name.
 	 * @param string $cap Capability name.
@@ -185,8 +193,7 @@ class WP_Network_Roles extends WP_Roles {
 	/**
 	 * Remove capability from role.
 	 *
-	 * @since 4.8.0
-	 * @access public
+	 * @since 1.0.0
 	 *
 	 * @param string $role Role name.
 	 * @param string $cap Capability name.
@@ -200,4 +207,109 @@ class WP_Network_Roles extends WP_Roles {
 			update_network_option( $this->network_id, $this->role_key, $this->roles );
 		}
 	}
+
+	/**
+	 * Initializes all of the available roles.
+	 *
+	 * @since 1.0.0
+	 */
+	public function init_roles() {
+		if ( empty( $this->roles ) ) {
+			return;
+		}
+
+		$this->role_objects = array();
+		$this->role_names =  array();
+		foreach ( array_keys( $this->roles ) as $role ) {
+			$this->role_objects[ $role ] = new WP_Network_Role( $role, $this->roles[ $role ]['capabilities'] );
+			$this->role_names[ $role ] = $this->roles[ $role ]['name'];
+		}
+
+		/**
+		 * After the network roles have been initialized, allow plugins to add their own roles.
+		 *
+		 * @since 1.0.0
+		 *
+		 * @param WP_Network_Roles $this A reference to the WP_Network_Roles object.
+		 */
+		do_action( 'wp_network_roles_init', $this );
+	}
+
+	/**
+	 * Sets the network to operate on. Defaults to the current network.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param int $network_id Network ID to initialize roles for. Default is the current network.
+	 */
+	public function for_network( $network_id = null ) {
+		if ( ! empty( $network_id ) ) {
+			$this->network_id = absint( $network_id );
+		} else {
+			$this->network_id = get_current_network_id();
+		}
+
+		$this->role_key = 'user_roles';
+
+		if ( ! empty( $this->roles ) && ! $this->use_db ) {
+			return;
+		}
+
+		$this->roles = $this->get_roles_data();
+
+		$this->init_roles();
+	}
+
+	/**
+	 * Sets the site to operate on. Defaults to the current site.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param int $site_id Site ID to initialize roles for. Default is the current site.
+	 */
+	public function for_site( $site_id = null ) {
+		// Empty method body.
+	}
+
+	/**
+	 * Gets the ID of the network for which roles are currently initialized.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return int Network ID.
+	 */
+	public function get_network_id() {
+		return $this->network_id;
+	}
+
+	/**
+	 * Gets the ID of the site for which roles are currently initialized.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return int Site ID.
+	 */
+	public function get_site_id() {
+		return 0;
+	}
+
+	/**
+	 * Gets the available roles data.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @global array $wp_network_user_roles Used to set the 'roles' property value.
+	 *
+	 * @return array Roles array.
+	 */
+	protected function get_roles_data() {
+		global $wp_network_user_roles;
+
+		if ( ! empty( $wp_network_user_roles ) ) {
+			return $wp_network_user_roles;
+		}
+
+		return get_network_option( $this->network_id, $this->role_key, array() );
+	}
 }
+endif;

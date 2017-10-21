@@ -2,22 +2,21 @@
 /**
  * User API: WP_Network_Role class
  *
- * @package WordPress
- * @subpackage Users
- * @since 4.8.0
+ * @package WPNetworkRoles
+ * @since 1.0.0
  */
 
+if ( ! class_exists( 'WP_Network_Role' ) ) :
 /**
  * Core class used to extend the network user roles API.
  *
- * @since 4.8.0
+ * @since 1.0.0
  */
 class WP_Network_Role extends WP_Role {
 	/**
 	 * Assign network role a capability.
 	 *
-	 * @since 4.8.0
-	 * @access public
+	 * @since 1.0.0
 	 *
 	 * @param string $cap Capability name.
 	 * @param bool $grant Whether network role has capability privilege.
@@ -35,8 +34,7 @@ class WP_Network_Role extends WP_Role {
 	 * implements the functionality, but it also makes sense to use this class,
 	 * because you don't need to enter the role name.
 	 *
-	 * @since 4.8.0
-	 * @access public
+	 * @since 1.0.0
 	 *
 	 * @param string $cap Capability name.
 	 */
@@ -53,8 +51,7 @@ class WP_Network_Role extends WP_Role {
 	 * has assigned. The second parameter is the capability name to look for.
 	 * The third and final parameter for the hook is the role name.
 	 *
-	 * @since 4.8.0
-	 * @access public
+	 * @since 1.0.0
 	 *
 	 * @param string $cap Capability name.
 	 * @return bool True if the network role has the given capability. False otherwise.
@@ -63,7 +60,7 @@ class WP_Network_Role extends WP_Role {
 		/**
 		 * Filters which capabilities a network role has.
 		 *
-		 * @since 4.8.0
+		 * @since 1.0.0
 		 *
 		 * @param array  $capabilities Array of role capabilities.
 		 * @param string $cap          Capability name.
@@ -78,3 +75,4 @@ class WP_Network_Role extends WP_Role {
 		return false;
 	}
 }
+endif;

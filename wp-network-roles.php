@@ -6,9 +6,8 @@ Description: Implements network-wide user roles in WordPress.
 Version:     1.0.0
 Author:      Felix Arntz
 Author URI:  https://leaves-and-love.net
-License:     GNU General Public License v2
-License URI: http://www.gnu.org/licenses/gpl-2.0.html
-Network:     True
+License:     GNU General Public License v3
+License URI: http://www.gnu.org/licenses/gpl-3.0.html
 Text Domain: wp-network-roles
 Network:     true
 Tags:        network roles, network, multisite, multinetwork
@@ -60,7 +59,7 @@ function nr_requirements_notice() {
 	<div class="notice notice-warning is-dismissible">
 		<p>
 			<?php printf(
-				__( 'Please note: WP Network Roles requires WordPress 4.8 or higher. <a href="%s">Deactivate plugin</a>.' ),
+				__( 'Please note: WP Network Roles requires WordPress 4.9-beta or higher. <a href="%s">Deactivate plugin</a>.' ),
 				wp_nonce_url(
 					add_query_arg(
 						array(
@@ -100,7 +99,7 @@ function nr_activate_everywhere( $plugins ) {
 	return $plugins;
 }
 
-if ( version_compare( $GLOBALS['wp_version'], '4.8', '<' ) ) {
+if ( version_compare( $GLOBALS['wp_version'], '4.9-beta', '<' ) ) {
 	add_action( 'admin_notices', 'nr_requirements_notice' );
 	add_action( 'network_admin_notices', 'nr_requirements_notice' );
 } else {

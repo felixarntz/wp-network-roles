@@ -2,12 +2,20 @@
 /**
  * Adjustments for the MS Users list table.
  *
- * @package WordPress
- * @subpackage Users
- * @since 4.8.0
+ * @package WPNetworkRoles
+ * @since 1.0.0
  */
 
-function wpnr_ms_users_override_query_args( $args ) {
+/**
+ * Adjusts the users list table query to only include users with a specific role or without any role.
+ *
+ * @since 1.0.0
+ * @access private
+ *
+ * @param array $args User query arguments.
+ * @return array Modified user query arguments.
+ */
+function _nr_ms_users_override_query_args( $args ) {
 	global $role;
 
 	if ( ! is_network_admin() ) {
@@ -22,18 +30,38 @@ function wpnr_ms_users_override_query_args( $args ) {
 
 	return $args;
 }
-add_filter( 'users_list_table_query_args', 'wpnr_ms_users_override_query_args' );
+add_filter( 'users_list_table_query_args', '_nr_ms_users_override_query_args' );
 
-function wpnr_ms_users_override_columns( $columns ) {
+/**
+ * Adds a column for the network role to the users list table.
+ *
+ * @since 1.0.0
+ * @access private
+ *
+ * @param array $columns List table columns.
+ * @return array Modified list table columns.
+ */
+function _nr_ms_users_override_columns( $columns ) {
 	$first_columns = array_slice( $columns, 0, 4 );
 
 	$last_columns = array_diff_key( $columns, $first_columns );
 
 	return array_merge( $first_columns, array( 'role' => __( 'Network Role' ) ), $last_columns );
 }
-add_filter( 'wpmu_users_columns', 'wpnr_ms_users_override_columns' );
+add_filter( 'wpmu_users_columns', '_nr_ms_users_override_columns' );
 
-function wpnr_ms_users_column_role( $output, $column_name, $user_id ) {
+/**
+ * Adds a column for the network role to the users list table.
+ *
+ * @since 1.0.0
+ * @access private
+ *
+ * @param string $output      Column output.
+ * @param string $column_name Column slug.
+ * @param int    $user_id     User ID.
+ * @return string Modified column output.
+ */
+function _nr_ms_users_column_role( $output, $column_name, $user_id ) {
 	if ( ! is_network_admin() ) {
 		return $output;
 	}
@@ -44,18 +72,27 @@ function wpnr_ms_users_column_role( $output, $column_name, $user_id ) {
 
 	$user = get_userdata( $user_id );
 
-	$user_role_names = wpnr_ms_users_get_role_list( $user );
+	$user_role_names = _nr_ms_users_get_role_list( $user );
 
 	return implode( ', ', $user_role_names );
 }
-add_filter( 'manage_users_custom_column', 'wpnr_ms_users_column_role', 10, 3 );
+add_filter( 'manage_users_custom_column', '_nr_ms_users_column_role', 10, 3 );
 
-function wpnr_ms_users_get_role_list( $user_object ) {
+/**
+ * Gets the list of role names for a user.
+ *
+ * @since 1.0.0
+ * @access private
+ *
+ * @param WP_User $user User object.
+ * @return array Array of role names.
+ */
+function _nr_ms_users_get_role_list( $user ) {
 	$wp_network_roles = wp_network_roles();
 
 	$role_list = array();
 
-	foreach ( $user_object->roles as $role ) {
+	foreach ( nr_get_network_roles_for_user( $user->ID ) as $role ) {
 		if ( isset( $wp_network_roles->role_names[ $role ] ) ) {
 			$role_list[ $role ] = translate_network_user_role( $wp_network_roles->role_names[ $role ] );
 		}
@@ -68,7 +105,16 @@ function wpnr_ms_users_get_role_list( $user_object ) {
 	return $role_list;
 }
 
-function wpnr_ms_users_override_views( $views ) {
+/**
+ * Overrides the views for the MS users list table.
+ *
+ * @since 1.0.0
+ * @access private
+ *
+ * @param array $views View links.
+ * @return array Modified view links.
+ */
+function _nr_ms_users_override_views( $views ) {
 	global $role;
 
 	$wp_network_roles = wp_network_roles();
@@ -109,4 +155,4 @@ function wpnr_ms_users_override_views( $views ) {
 
 	return $role_links;
 }
-add_filter( 'views_users-network', 'wpnr_ms_users_override_views' );
+add_filter( 'views_users-network', '_nr_ms_users_override_views' );

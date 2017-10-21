@@ -6,6 +6,7 @@
  * @since 1.0.0
  */
 
+if ( ! function_exists( 'wp_network_roles' ) ) :
 /**
  * Retrieves the global WP_Network_Roles instance and instantiates it if necessary.
  *
@@ -23,7 +24,9 @@ function wp_network_roles() {
 	}
 	return $wp_network_roles;
 }
+endif;
 
+if ( ! function_exists( 'get_network_role' ) ) :
 /**
  * Retrieves a network role object.
  *
@@ -35,7 +38,9 @@ function wp_network_roles() {
 function get_network_role( $role ) {
 	return wp_network_roles()->get_role( $role );
 }
+endif;
 
+if ( ! function_exists( 'add_network_role' ) ) :
 /**
  * Adds a network role, if it does not exist.
  *
@@ -52,7 +57,9 @@ function add_network_role( $role, $display_name, $capabilities = array() ) {
 	}
 	return wp_network_roles()->add_role( $role, $display_name, $capabilities );
 }
+endif;
 
+if ( ! function_exists( 'remove_network_role' ) ) :
 /**
  * Removes a network role, if it exists.
  *
@@ -63,6 +70,7 @@ function add_network_role( $role, $display_name, $capabilities = array() ) {
 function remove_network_role( $role ) {
 	wp_network_roles()->remove_role( $role );
 }
+endif;
 
 /**
  * Sets up the network roles global and populates roles if necessary.
