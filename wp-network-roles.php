@@ -34,17 +34,17 @@ function nr_init() {
 	define( 'NR_PATH', plugin_dir_path( __FILE__ ) );
 	define( 'NR_URL', plugin_dir_url( __FILE__ ) );
 
-	require_once( NR_PATH . 'wp-network-roles/wp-includes/class-wp-network-role.php' );
-	require_once( NR_PATH . 'wp-network-roles/wp-includes/class-wp-network-roles.php' );
-	require_once( NR_PATH . 'wp-network-roles/wp-includes/capabilities.php' );
-	require_once( NR_PATH . 'wp-network-roles/wp-includes/user.php' );
+	require_once NR_PATH . 'wp-network-roles/wp-includes/class-wp-network-role.php';
+	require_once NR_PATH . 'wp-network-roles/wp-includes/class-wp-network-roles.php';
+	require_once NR_PATH . 'wp-network-roles/wp-includes/capabilities.php';
+	require_once NR_PATH . 'wp-network-roles/wp-includes/user.php';
 
 	if ( is_admin() ) {
-		require_once( NR_PATH . 'wp-network-roles/wp-admin/includes/wp-ms-users-list-table-tweaks.php' );
+		require_once NR_PATH . 'wp-network-roles/wp-admin/includes/wp-ms-users-list-table-tweaks.php';
 	}
 
 	if ( is_plugin_active( 'wp-multi-network/wpmn-loader.php' ) ) {
-		require_once( NR_PATH . 'wp-network-roles/multi-network-compat.php' );
+		require_once NR_PATH . 'wp-network-roles/multi-network-compat.php';
 	}
 }
 
