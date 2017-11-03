@@ -59,7 +59,7 @@ function nr_requirements_notice() {
 	<div class="notice notice-warning is-dismissible">
 		<p>
 			<?php printf(
-				__( 'Please note: WP Network Roles requires WordPress 4.9-beta or higher. <a href="%s">Deactivate plugin</a>.' ),
+				__( 'Please note: WP Network Roles requires WordPress 4.9-beta or higher. <a href="%s">Deactivate plugin</a>.', 'wp-network-roles' ),
 				wp_nonce_url(
 					add_query_arg(
 						array(
