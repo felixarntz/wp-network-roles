@@ -1,3 +1,9 @@
+[![Build Status](https://api.travis-ci.org/felixarntz/wp-network-roles.png?branch=master)](https://travis-ci.org/felixarntz/wp-network-roles)
+[![Code Climate](https://codeclimate.com/github/felixarntz/wp-network-roles/badges/gpa.svg)](https://codeclimate.com/github/felixarntz/wp-network-roles)
+[![Test Coverage](https://codeclimate.com/github/felixarntz/wp-network-roles/badges/coverage.svg)](https://codeclimate.com/github/felixarntz/wp-network-roles/coverage)
+[![Latest Stable Version](https://poser.pugx.org/felixarntz/wp-network-roles/version)](https://packagist.org/packages/felixarntz/wp-network-roles)
+[![License](https://poser.pugx.org/felixarntz/wp-network-roles/license)](https://packagist.org/packages/felixarntz/wp-network-roles)
+
 # WP Network Roles
 
 Proof-of-Concept for implementing a real network-wide role system in WordPress Core.
