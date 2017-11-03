@@ -1,22 +1,22 @@
 <?php
-/*
-Plugin Name: WP Network Roles
-Plugin URI:  https://github.com/felixarntz/wp-network-roles/
-Description: Implements network-wide user roles in WordPress.
-Version:     1.0.0
-Author:      Felix Arntz
-Author URI:  https://leaves-and-love.net
-License:     GNU General Public License v3
-License URI: http://www.gnu.org/licenses/gpl-3.0.html
-Text Domain: wp-network-roles
-Network:     true
-Tags:        network roles, network, multisite, multinetwork
- */
 /**
  * Plugin initialization file
  *
  * @package WPNetworkRoles
  * @since 1.0.0
+ *
+ * @wordpress-plugin
+ * Plugin Name: WP Network Roles
+ * Plugin URI:  https://github.com/felixarntz/wp-network-roles
+ * Description: Implements network-wide user roles in WordPress.
+ * Version:     1.0.0
+ * Author:      Felix Arntz
+ * Author URI:  https://leaves-and-love.net
+ * License:     GNU General Public License v3
+ * License URI: http://www.gnu.org/licenses/gpl-3.0.html
+ * Text Domain: wp-network-roles
+ * Network:     true
+ * Tags:        network roles, network, multisite, multinetwork
  */
 
 if ( ! is_multisite() ) {

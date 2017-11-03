@@ -1,0 +1,37 @@
+{
+  "name": "felixarntz/wp-network-roles",
+  "description": "Implements network-wide user roles in WordPress.",
+  "version": "1.0.0",
+  "license": "GPL-3.0",
+  "type": "wordpress-plugin",
+  "keywords": [
+    "wordpress",
+    "plugin",
+    "network roles",
+    "network",
+    "multisite",
+    "multinetwork"
+  ],
+  "homepage": "https://github.com/felixarntz/wp-network-roles",
+  "authors": [
+    {
+      "name": "Felix Arntz",
+      "email": "felix-arntz@leaves-and-love.net",
+      "homepage": "https://leaves-and-love.net",
+      "role": "Developer"
+    }
+  ],
+  "support": {
+    "issues": "https://github.com/felixarntz/global-admin/issues"
+  },
+  "config": {
+    "preferred-install": "dist"
+  },
+  "require": {
+    "composer/installers": "~1.0"
+  },
+  "require-dev": {
+    "codeclimate/php-test-reporter": "dev-master",
+    "phpunit/phpunit": ">4.8.20 <6.0"
+  }
+}
