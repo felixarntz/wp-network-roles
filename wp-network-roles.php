@@ -19,10 +19,6 @@
  * Tags:        network roles, network, multisite, multinetwork
  */
 
-if ( ! is_multisite() ) {
-	return;
-}
-
 /**
  * Initializes the plugin.
  *
@@ -106,7 +102,7 @@ if ( version_compare( $GLOBALS['wp_version'], '4.9-beta', '<' ) ) {
 	add_action( 'plugins_loaded', 'nr_init' );
 
 	if ( did_action( 'muplugins_loaded' ) ) {
-		add_filter( 'site_option_active_sitewide_plugins', 'nr_activate_everywhere', 10, 1 );
+		// add_filter( 'site_option_active_sitewide_plugins', 'nr_activate_everywhere', 10, 1 );
 		add_filter( 'pre_update_site_option_active_sitewide_plugins', 'nr_activate_everywhere', 10, 1 );
 	}
 }
