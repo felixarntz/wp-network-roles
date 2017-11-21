@@ -11,31 +11,31 @@ matrix:
     - php: 7.1
       env: WP_VERSION=master WP_MULTISITE=1 PHPLINT=1 COVERAGE=1
     - php: 5.3
-      env: WP_VERSION=4.8 WP_MULTISITE=1 PHPLINT=1
+      env: WP_VERSION=4.9 WP_MULTISITE=1 PHPLINT=1
     - php: 7.1
-      env: WP_VERSION=4.8 WP_MULTISITE=1
+      env: WP_VERSION=4.9 WP_MULTISITE=1
     - php: 7.0
-      env: WP_VERSION=4.8 WP_MULTISITE=1
+      env: WP_VERSION=4.9 WP_MULTISITE=1
     - php: 5.6
-      env: WP_VERSION=4.8 WP_MULTISITE=1
+      env: WP_VERSION=4.9 WP_MULTISITE=1
     - php: 5.6
-      env: WP_VERSION=4.8 WP_MULTISITE=1 WP_TRAVIS_OBJECT_CACHE=true
+      env: WP_VERSION=4.9 WP_MULTISITE=1 WP_TRAVIS_OBJECT_CACHE=true
       services: memcached
     - php: 5.5
-      env: WP_VERSION=4.8 WP_MULTISITE=1
+      env: WP_VERSION=4.9 WP_MULTISITE=1
     - php: 5.4
-      env: WP_VERSION=4.8 WP_MULTISITE=1
+      env: WP_VERSION=4.9 WP_MULTISITE=1
     - php: 5.3
-      env: WP_VERSION=4.8 WP_MULTISITE=1
+      env: WP_VERSION=4.9 WP_MULTISITE=1
       dist: precise
     - php: 5.2
-      env: WP_VERSION=4.8 WP_MULTISITE=1
+      env: WP_VERSION=4.9 WP_MULTISITE=1
       dist: precise
     - php: nightly
-      env: WP_VERSION=4.8 WP_MULTISITE=1
+      env: WP_VERSION=4.9 WP_MULTISITE=1
   allow_failures:
     - php: nightly
-      env: WP_VERSION=4.8 WP_MULTISITE=1
+      env: WP_VERSION=4.9 WP_MULTISITE=1
 before_script:
 - PLUGIN_SLUG=$(basename $(pwd))
 - export WP_DEVELOP_DIR=/tmp/wordpress/
@@ -50,11 +50,6 @@ before_script:
 - mysql -e "CREATE DATABASE wordpress_tests;" -uroot
 - cd "/tmp/wordpress/src/wp-content/plugins/$PLUGIN_SLUG"
 - phpenv rehash
-- |
-  if [[ "$TRAVIS_PHP_VERSION" != "5.2" ]]; then
-    composer selfupdate 1.0.0 --no-interaction
-    composer install --dev --no-interaction
-  fi
 - |
   if [[ "$WP_TRAVIS_OBJECT_CACHE" == "true" ]]; then
     cp tests/phpunit/includes/object-cache.php /tmp/wordpress/src/wp-content/object-cache.php
@@ -74,7 +69,11 @@ before_script:
     5.6|5.5|5.4|5.3)
       composer global require "phpunit/phpunit:^4"
       ;;
+    5.2)
+      ;;
     *)
+      composer selfupdate 1.0.0 --no-interaction
+      composer install --dev --no-interaction
       ;;
   esac
 script:

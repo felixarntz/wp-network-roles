@@ -5,8 +5,8 @@ Plugin URI:        https://github.com/felixarntz/wp-network-roles
 Author:            Felix Arntz
 Author URI:        https://leaves-and-love.net
 Contributors:      flixos90
-Requires at least: 4.8
-Tested up to:      4.8
+Requires at least: 4.9
+Tested up to:      4.9
 Stable tag:        1.0.0
 Version:           1.0.0
 License:           GNU General Public License v3
