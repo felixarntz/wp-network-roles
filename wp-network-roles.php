@@ -39,6 +39,7 @@ function nr_init() {
 		require_once NR_PATH . 'wp-network-roles/wp-admin/includes/wp-ms-users-list-table-tweaks.php';
 	}
 
+	require_once ABSPATH . 'wp-admin/includes/plugin.php';
 	if ( is_plugin_active( 'wp-multi-network/wpmn-loader.php' ) ) {
 		require_once NR_PATH . 'wp-network-roles/multi-network-compat.php';
 	}
