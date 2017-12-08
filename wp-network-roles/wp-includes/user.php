@@ -322,7 +322,7 @@ function _nr_get_network_role_caps_for_user( $user_id, $network_id = 0 ) {
 		$the_role = $wp_network_roles->get_role( $role );
 		$_nr_network_role_data[ $user_id ][ $network_id ]['allcaps'] = array_merge( (array) $_nr_network_role_data[ $user_id ][ $network_id ]['allcaps'], (array) $the_role->capabilities );
 	}
-	$_nr_network_role_data[ $user_id ][ $network_id ]['allcaps'] = array_merge( (array) $_nr_network_role_data[ $user_id ][ $network_id ]['allcaps'], (array) $_nr_network_role_data[ $user_id ]['caps'] );
+	$_nr_network_role_data[ $user_id ][ $network_id ]['allcaps'] = array_merge( (array) $_nr_network_role_data[ $user_id ][ $network_id ]['allcaps'], (array) $_nr_network_role_data[ $user_id ][ $network_id ]['caps'] );
 
 	if ( ! empty( $original_network_id ) ) {
 		$wp_network_roles->for_network( $original_network_id );
