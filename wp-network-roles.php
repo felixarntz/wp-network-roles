@@ -52,6 +52,11 @@ function nr_init() {
  */
 function nr_requirements_notice() {
 	$plugin_file = plugin_basename( __FILE__ );
+
+	if ( ! current_user_can( 'deactivate_plugin', $plugin_file ) ) {
+		return;
+	}
+
 	?>
 	<div class="notice notice-warning is-dismissible">
 		<p>
@@ -64,7 +69,7 @@ function nr_requirements_notice() {
 							'plugin'        => $plugin_file,
 							'plugin_status' => 'all',
 						),
-						self_admin_url( 'plugins.php' )
+						network_admin_url( 'plugins.php' )
 					),
 					'deactivate-plugin_' . $plugin_file
 				)
