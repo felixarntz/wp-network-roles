@@ -37,6 +37,7 @@ function nr_init() {
 	require_once NR_PATH . 'wp-network-roles/wp-includes/user.php';
 	require_once NR_PATH . 'wp-network-roles/wp-includes/sync-network-relationships.php';
 	require_once NR_PATH . 'wp-network-roles/wp-includes/sync-super-admins.php';
+	require_once NR_PATH . 'wp-network-roles/wp-includes/setup-migration.php';
 
 	if ( is_admin() ) {
 		require_once NR_PATH . 'wp-network-roles/wp-admin/includes/wp-ms-users-list-table-tweaks.php';

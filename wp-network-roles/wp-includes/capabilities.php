@@ -89,32 +89,5 @@ endif;
  */
 function _nr_setup_wp_network_roles() {
 	$GLOBALS['wp_network_roles'] = new WP_Network_Roles();
-
-	_nr_maybe_populate_roles();
 }
 add_action( 'setup_theme', '_nr_setup_wp_network_roles', 1 );
-
-/**
- * Populates the available network roles if necessary.
- *
- * @since 1.0.0
- * @access private
- */
-function _nr_maybe_populate_roles() {
-	if ( get_network_role( 'administrator' ) ) {
-		return;
-	}
-
-	$site_administrator = get_role( 'administrator' );
-
-	$network_administrator_capabilities = array_fill_keys( array(
-		'manage_network',
-		'manage_sites',
-		'manage_network_users',
-		'manage_network_themes',
-		'manage_network_plugins',
-		'manage_network_options',
-	), true );
-
-	add_network_role( 'administrator', __( 'Network Administrator' ), $network_administrator_capabilities );
-}
