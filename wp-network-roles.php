@@ -35,6 +35,7 @@ function nr_init() {
 	require_once NR_PATH . 'wp-network-roles/wp-includes/class-wpnr-user-with-network-roles.php';
 	require_once NR_PATH . 'wp-network-roles/wp-includes/capabilities.php';
 	require_once NR_PATH . 'wp-network-roles/wp-includes/user.php';
+	require_once NR_PATH . 'wp-network-roles/wp-includes/sync-network-relationships.php';
 	require_once NR_PATH . 'wp-network-roles/wp-includes/sync-super-admins.php';
 
 	if ( is_admin() ) {
