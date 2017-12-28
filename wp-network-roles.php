@@ -84,21 +84,17 @@ function nr_requirements_notice() {
  *
  * @since 1.0.0
  *
- * @param array $plugins Array of plugin basenames as keys and time() as values.
- * @return array Modified plugins array.
+ * @param array $network_options All network options for the new network.
+ * @return array Modified network options including the plugin.
  */
-function nr_activate_everywhere( $plugins ) {
-	if ( ! is_array( $plugins ) ) {
-		$plugins = array();
+function nr_activate_on_new_network( $network_options ) {
+	$plugin_file = plugin_basename( __FILE__ );
+
+	if ( ! isset( $network_options['active_sitewide_plugins'][ $plugin_file ] ) ) {
+		$network_options['active_sitewide_plugins'][ $plugin_file ] = time();
 	}
 
-	if ( isset( $plugins['wp-network-roles/wp-network-roles.php'] ) ) {
-		return $plugins;
-	}
-
-	$plugins['wp-network-roles/wp-network-roles.php'] = time();
-
-	return $plugins;
+	return $network_options;
 }
 
 if ( version_compare( $GLOBALS['wp_version'], '4.9', '<' ) ) {
@@ -108,7 +104,6 @@ if ( version_compare( $GLOBALS['wp_version'], '4.9', '<' ) ) {
 	add_action( 'plugins_loaded', 'nr_init' );
 
 	if ( did_action( 'muplugins_loaded' ) ) {
-		// add_filter( 'site_option_active_sitewide_plugins', 'nr_activate_everywhere', 10, 1 );
-		add_filter( 'pre_update_site_option_active_sitewide_plugins', 'nr_activate_everywhere', 10, 1 );
+		add_filter( 'populate_network_meta', 'nr_activate_on_new_network', 10, 1 );
 	}
 }
