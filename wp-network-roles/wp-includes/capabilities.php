@@ -160,10 +160,18 @@ add_filter( 'pre_site_option_site_admins', '_nr_filter_super_admins', 10, 4 );
  * @since 1.0.0
  * @access private
  *
+ * @global array $wpnr_users_with_network_roles Internal storage for user objects with network roles.
+ *
  * @param int $user_id User ID of the user who was granted super admin privileges.
  */
 function _nr_grant_network_administrator( $user_id ) {
-	nr_add_network_role_for_user( $user_id, 'administrator' );
+	global $wpnr_users_with_network_roles;
+
+	if ( ! isset( $wpnr_users_with_network_roles[ $user_id ] ) ) {
+		$wpnr_users_with_network_roles[ $user_id ] = new WPNR_User_With_Network_Roles( $user_id );
+	}
+
+	$wpnr_users_with_network_roles[ $user_id ]->add_network_role( 'administrator' );
 }
 add_action( 'granted_super_admin', 'wpnr_grant_network_administrator', 10, 1 );
 
@@ -177,9 +185,17 @@ add_action( 'granted_super_admin', 'wpnr_grant_network_administrator', 10, 1 );
  * @since 1.0.0
  * @access private
  *
+ * @global array $wpnr_users_with_network_roles Internal storage for user objects with network roles.
+ *
  * @param int $user_id User ID of the user whose super admin privileges were revoked.
  */
 function _nr_revoke_network_administrator( $user_id ) {
-	nr_remove_network_role_for_user( $user_id, 'administrator' );
+	global $wpnr_users_with_network_roles;
+
+	if ( ! isset( $wpnr_users_with_network_roles[ $user_id ] ) ) {
+		$wpnr_users_with_network_roles[ $user_id ] = new WPNR_User_With_Network_Roles( $user_id );
+	}
+
+	$wpnr_users_with_network_roles[ $user_id ]->remove_network_role( 'administrator' );
 }
 add_action( 'revoked_super_admin', 'wpnr_revoke_network_administrator', 10, 1 );

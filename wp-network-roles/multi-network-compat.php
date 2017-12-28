@@ -12,11 +12,13 @@
  * @since 1.0.0
  * @access private
  *
+ * @global array $wpnr_users_with_network_roles Internal storage for user objects with network roles.
+ *
  * @param int $new_network_id ID of the network switched to.
  * @param int $old_network_id ID of the network switched from.
  */
 function _nr_switched_network( $new_network_id, $old_network_id ) {
-	global $_nr_network_role_data;
+	global $wpnr_users_with_network_roles;
 
 	if ( (int) $new_network_id === (int) $old_network_id ) {
 		return;
@@ -26,8 +28,10 @@ function _nr_switched_network( $new_network_id, $old_network_id ) {
 
 	wp_network_roles()->for_network( $new_network_id );
 
-	if ( ! isset( $_nr_network_role_data[ $user_id ][ $new_network_id ] ) ) {
-		_nr_get_network_role_caps_for_user( $user_id, $new_network_id );
+	if ( ! isset( $wpnr_users_with_network_roles[ $user_id ] ) ) {
+		$wpnr_users_with_network_roles[ $user_id ] = new WPNR_User_With_Network_Roles( $user_id, $new_network_id );
+	} elseif ( $wpnr_users_with_network_roles[ $user_id ]->get_network_id() !== (int) $new_network_id ) {
+		$wpnr_users_with_network_roles[ $user_id ]->for_network( $new_network_id );
 	}
 }
 add_action( 'switch_network', '_nr_switched_network', 10, 2 );

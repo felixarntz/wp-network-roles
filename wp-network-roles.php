@@ -32,6 +32,7 @@ function nr_init() {
 
 	require_once NR_PATH . 'wp-network-roles/wp-includes/class-wp-network-role.php';
 	require_once NR_PATH . 'wp-network-roles/wp-includes/class-wp-network-roles.php';
+	require_once NR_PATH . 'wp-network-roles/wp-includes/class-wpnr-user-with-network-roles.php';
 	require_once NR_PATH . 'wp-network-roles/wp-includes/capabilities.php';
 	require_once NR_PATH . 'wp-network-roles/wp-includes/user.php';
 
@@ -60,7 +61,9 @@ function nr_requirements_notice() {
 	?>
 	<div class="notice notice-warning is-dismissible">
 		<p>
-			<?php printf(
+			<?php
+			printf(
+				/* translators: %s: URL to deactivate plugin */
 				__( 'Please note: WP Network Roles requires WordPress 4.9 or higher. <a href="%s">Deactivate plugin</a>.', 'wp-network-roles' ),
 				wp_nonce_url(
 					add_query_arg(
@@ -73,7 +76,8 @@ function nr_requirements_notice() {
 					),
 					'deactivate-plugin_' . $plugin_file
 				)
-			); ?>
+			);
+			?>
 		</p>
 	</div>
 	<?php

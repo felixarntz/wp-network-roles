@@ -6,154 +6,6 @@
  * @since 1.0.0
  */
 
-/**
- * Gets the network roles for a user.
- *
- * @since 1.0.0
- *
- * @global array $_nr_network_role_data Internal storage for network roles of users.
- *
- * @param int $user_id    User ID.
- * @param int $network_id Optional. Network ID. Default is the current network ID.
- */
-function nr_get_network_roles_for_user( $user_id, $network_id = 0 ) {
-	global $_nr_network_role_data;
-
-	if ( ! $network_id ) {
-		$network_id = get_current_network_id();
-	}
-
-	if ( ! isset( $_nr_network_role_data[ $user_id ][ $network_id ] ) ) {
-		_nr_get_network_role_caps_for_user( $user_id, $network_id );
-	}
-
-	return $_nr_network_role_data[ $user_id ][ $network_id ]['roles'];
-}
-
-/**
- * Adds a network role to a user.
- *
- * @since 1.0.0
- *
- * @global wpdb $wpdb WordPress database abstraction object.
- *
- * @param int    $user_id    User ID.
- * @param string $role       Role to add to the user.
- * @param int    $network_id Optional. Network ID. Default is the current network ID.
- */
-function nr_add_network_role_for_user( $user_id, $role, $network_id = 0 ) {
-	global $wpdb;
-
-	if ( ! $network_id ) {
-		$network_id = $wpdb->siteid;
-	}
-
-	$network_cap_key = $wpdb->base_prefix . 'network_' . $network_id . '_capabilities';
-
-	$network_roles = get_user_meta( $user_id, $network_cap_key, true ); // phpcs:ignore WordPress.VIP.RestrictedFunctions
-	if ( ! is_array( $network_roles ) ) {
-		$network_roles = array();
-	}
-
-	$network_roles[ $role ] = true;
-	update_user_meta( $user_id, $network_cap_key, $network_roles ); // phpcs:ignore WordPress.VIP.RestrictedFunctions
-
-	_nr_get_network_role_caps_for_user( $user_id, $network_id );
-
-	/**
-	 * Fires immediately after the user has been given a new network role.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @param int    $user_id The user ID.
-	 * @param string $role    The new role.
-	 */
-	do_action( 'add_network_user_role', $user_id, $role );
-}
-
-/**
- * Removes a network role from a user.
- *
- * @since 1.0.0
- *
- * @global wpdb $wpdb WordPress database abstraction object.
- *
- * @param int    $user_id    User ID.
- * @param string $role       Role to remove from the user.
- * @param int    $network_id Optional. Network ID. Default is the current network ID.
- */
-function nr_remove_network_role_for_user( $user_id, $role, $network_id = 0 ) {
-	global $wpdb;
-
-	if ( ! $network_id ) {
-		$network_id = $wpdb->siteid;
-	}
-
-	$network_cap_key = $wpdb->base_prefix . 'network_' . $network_id . '_capabilities';
-
-	$network_roles = get_user_meta( $user_id, $network_cap_key, true ); // phpcs:ignore WordPress.VIP.RestrictedFunctions
-	if ( ! is_array( $network_roles ) ) {
-		return;
-	}
-
-	if ( ! isset( $network_roles[ $role ] ) ) {
-		return;
-	}
-
-	unset( $network_roles[ $role ] );
-	update_user_meta( $user_id, $network_cap_key, $network_roles ); // phpcs:ignore WordPress.VIP.RestrictedFunctions
-
-	_nr_get_network_role_caps_for_user( $user_id, $network_id );
-
-	/**
-	 * Fires immediately after a network role as been removed from a user.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @param int    $user_id The user ID.
-	 * @param string $role    The removed role.
-	 */
-	do_action( 'remove_network_user_role', $user_id, $role );
-}
-
-/**
- * Sets a network role to a user.
- *
- * @since 1.0.0
- *
- * @global wpdb $wpdb WordPress database abstraction object.
- *
- * @param int    $user_id    User ID.
- * @param string $role       Role to add to the user.
- * @param int    $network_id Optional. Network ID. Default is the current network ID.
- */
-function nr_set_network_role_for_user( $user_id, $role, $network_id = 0 ) {
-	global $wpdb;
-
-	if ( ! $network_id ) {
-		$network_id = $wpdb->siteid;
-	}
-
-	$network_cap_key = $wpdb->base_prefix . 'network_' . $network_id . '_capabilities';
-
-	$old_roles = get_user_meta( $user_id, $network_cap_key, true ); // phpcs:ignore WordPress.VIP.RestrictedFunctions
-
-	update_user_meta( $user_id, $network_cap_key, array( $role => true ) ); // phpcs:ignore WordPress.VIP.RestrictedFunctions
-
-	_nr_get_network_role_caps_for_user( $user_id, $network_id );
-
-	/**
-	 * Fires after the user's network role has changed.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @param int    $user_id   The user ID.
-	 * @param string $role      The new role.
-	 * @param array  $old_roles An array of the user's previous roles.
-	 */
-	do_action( 'set_network_user_role', $user_id, $role, $old_roles );
-}
-
 if ( ! function_exists( 'count_network_users' ) ) :
 
 	/**
@@ -283,70 +135,12 @@ if ( ! function_exists( 'translate_network_user_role' ) ) :
 endif;
 
 /**
- * Builds the network roles and capabilities data for a user.
- *
- * @since 1.0.0
- * @access private
- *
- * @global wpdb  $wpdb                  WordPress database abstraction object.
- * @global array $_nr_network_role_data Internal storage for network roles of users.
- *
- * @param int $user_id    User ID.
- * @param int $network_id Optional. Network ID. Default is the current network ID.
- */
-function _nr_get_network_role_caps_for_user( $user_id, $network_id = 0 ) {
-	global $wpdb, $_nr_network_role_data;
-
-	if ( ! $network_id ) {
-		$network_id = $wpdb->siteid;
-	}
-
-	$network_cap_key = $wpdb->base_prefix . 'network_' . $network_id . '_capabilities';
-
-	if ( ! isset( $_nr_network_role_data ) ) {
-		$_nr_network_role_data = array();
-	}
-
-	if ( ! isset( $_nr_network_role_data[ $user_id ][ $network_id ] ) ) {
-		$_nr_network_role_data[ $user_id ][ $network_id ] = array();
-	}
-
-	$_nr_network_role_data[ $user_id ][ $network_id ]['caps'] = get_user_meta( $user_id, $network_cap_key, true ); // phpcs:ignore WordPress.VIP.RestrictedFunctions
-	if ( ! is_array( $_nr_network_role_data[ $user_id ][ $network_id ]['caps'] ) ) {
-		$_nr_network_role_data[ $user_id ][ $network_id ]['caps'] = array();
-	}
-
-	$wp_network_roles = wp_network_roles();
-
-	$original_network_id = 0;
-	if ( (int) $network_id !== $wp_network_roles->get_network_id() ) {
-		$original_network_id = $wp_network_roles->get_network_id();
-
-		$wp_network_roles->for_network( $network_id );
-	}
-
-	$_nr_network_role_data[ $user_id ][ $network_id ]['roles'] = array_filter( array_keys( $_nr_network_role_data[ $user_id ][ $network_id ]['caps'] ), array( $wp_network_roles, 'is_role' ) );
-
-	// Build $allcaps from role caps, overlay user's $caps.
-	$_nr_network_role_data[ $user_id ][ $network_id ]['allcaps'] = array();
-	foreach ( (array) $_nr_network_role_data[ $user_id ][ $network_id ]['roles'] as $role ) {
-		$the_role = $wp_network_roles->get_role( $role );
-		$_nr_network_role_data[ $user_id ][ $network_id ]['allcaps'] = array_merge( (array) $_nr_network_role_data[ $user_id ][ $network_id ]['allcaps'], (array) $the_role->capabilities );
-	}
-	$_nr_network_role_data[ $user_id ][ $network_id ]['allcaps'] = array_merge( (array) $_nr_network_role_data[ $user_id ][ $network_id ]['allcaps'], (array) $_nr_network_role_data[ $user_id ][ $network_id ]['caps'] );
-
-	if ( ! empty( $original_network_id ) ) {
-		$wp_network_roles->for_network( $original_network_id );
-	}
-}
-
-/**
  * Adds the network capabilities to a user's regular capabilities.
  *
  * @since 1.0.0
  * @access private
  *
- * @global array $_nr_network_role_data Internal storage for network roles of users.
+ * @global array $wpnr_users_with_network_roles Internal storage for user objects with network roles.
  *
  * @param array   $allcaps Array of all the user's capabilities.
  * @param array   $caps    Actual capabilities for meta capability.
@@ -355,7 +149,7 @@ function _nr_get_network_role_caps_for_user( $user_id, $network_id = 0 ) {
  * @return array $allcaps including network capabilities.
  */
 function _nr_filter_user_has_cap( $allcaps, $caps, $args, $user ) {
-	global $_nr_network_role_data;
+	global $wpnr_users_with_network_roles;
 
 	$site = get_site( $user->get_site_id() );
 	if ( ! $site ) {
@@ -364,11 +158,13 @@ function _nr_filter_user_has_cap( $allcaps, $caps, $args, $user ) {
 
 	$network_id = $site->network_id;
 
-	if ( ! isset( $_nr_network_role_data[ $user->ID ][ $network_id ] ) ) {
-		_nr_get_network_role_caps_for_user( $user->ID, $network_id );
+	if ( ! isset( $wpnr_users_with_network_roles[ $user->ID ] ) ) {
+		$wpnr_users_with_network_roles[ $user->ID ] = new WPNR_User_With_Network_Roles( $user->ID, $network_id );
+	} elseif ( $wpnr_users_with_network_roles[ $user->ID ]->get_network_id() !== $network_id ) {
+		$wpnr_users_with_network_roles[ $user->ID ]->for_network( $network_id );
 	}
 
-	return array_merge( $allcaps, $_nr_network_role_data[ $user->ID ][ $network_id ]['allcaps'] );
+	return array_merge( $allcaps, $wpnr_users_with_network_roles[ $user->ID ]->network_allcaps );
 }
 add_filter( 'user_has_cap', '_nr_filter_user_has_cap', 1, 4 );
 
