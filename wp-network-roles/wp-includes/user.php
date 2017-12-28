@@ -11,6 +11,8 @@
  *
  * @since 1.0.0
  *
+ * @global array $_nr_network_role_data Internal storage for network roles of users.
+ *
  * @param int $user_id    User ID.
  * @param int $network_id Optional. Network ID. Default is the current network ID.
  */
@@ -48,13 +50,13 @@ function nr_add_network_role_for_user( $user_id, $role, $network_id = 0 ) {
 
 	$network_cap_key = $wpdb->base_prefix . 'network_' . $network_id . '_capabilities';
 
-	$network_roles = get_user_meta( $user_id, $network_cap_key, true );
+	$network_roles = get_user_meta( $user_id, $network_cap_key, true ); // phpcs:ignore WordPress.VIP.RestrictedFunctions
 	if ( ! is_array( $network_roles ) ) {
 		$network_roles = array();
 	}
 
 	$network_roles[ $role ] = true;
-	update_user_meta( $user_id, $network_cap_key, $network_roles );
+	update_user_meta( $user_id, $network_cap_key, $network_roles ); // phpcs:ignore WordPress.VIP.RestrictedFunctions
 
 	_nr_get_network_role_caps_for_user( $user_id, $network_id );
 
@@ -89,7 +91,7 @@ function nr_remove_network_role_for_user( $user_id, $role, $network_id = 0 ) {
 
 	$network_cap_key = $wpdb->base_prefix . 'network_' . $network_id . '_capabilities';
 
-	$network_roles = get_user_meta( $user_id, $network_cap_key, true );
+	$network_roles = get_user_meta( $user_id, $network_cap_key, true ); // phpcs:ignore WordPress.VIP.RestrictedFunctions
 	if ( ! is_array( $network_roles ) ) {
 		return;
 	}
@@ -99,7 +101,7 @@ function nr_remove_network_role_for_user( $user_id, $role, $network_id = 0 ) {
 	}
 
 	unset( $network_roles[ $role ] );
-	update_user_meta( $user_id, $network_cap_key, $network_roles );
+	update_user_meta( $user_id, $network_cap_key, $network_roles ); // phpcs:ignore WordPress.VIP.RestrictedFunctions
 
 	_nr_get_network_role_caps_for_user( $user_id, $network_id );
 
@@ -134,9 +136,9 @@ function nr_set_network_role_for_user( $user_id, $role, $network_id = 0 ) {
 
 	$network_cap_key = $wpdb->base_prefix . 'network_' . $network_id . '_capabilities';
 
-	$old_roles = get_user_meta( $user_id, $network_cap_key, true );
+	$old_roles = get_user_meta( $user_id, $network_cap_key, true ); // phpcs:ignore WordPress.VIP.RestrictedFunctions
 
-	update_user_meta( $user_id, $network_cap_key, array( $role => true ) );
+	update_user_meta( $user_id, $network_cap_key, array( $role => true ) ); // phpcs:ignore WordPress.VIP.RestrictedFunctions
 
 	_nr_get_network_role_caps_for_user( $user_id, $network_id );
 
@@ -153,125 +155,131 @@ function nr_set_network_role_for_user( $user_id, $role, $network_id = 0 ) {
 }
 
 if ( ! function_exists( 'count_network_users' ) ) :
-/**
- * Counts number of network users who have each of the user roles.
- *
- * Assumes there are neither duplicated nor orphaned capabilities meta_values.
- * Assumes role names are unique phrases. Same assumption made by WP_User_Query::prepare_query()
- * Using $strategy = 'time' this is CPU-intensive and should handle around 10^7 users.
- * Using $strategy = 'memory' this is memory-intensive and should handle around 10^5 users, but see WP Bug #12257.
- *
- * @since 1.0.0
- *
- * @global wpdb $wpdb WordPress database abstraction object.
- *
- * @param string $strategy 'time' or 'memory'
- * @return array Includes a grand total and an array of counts indexed by role strings.
- */
-function count_network_users( $strategy = 'time' ) {
-	global $wpdb;
 
-	$id = get_current_network_id();
-	$network_prefix = $wpdb->base_prefix . 'network_' . $id . '_';
-	$result = array();
+	/**
+	 * Counts number of network users who have each of the user roles.
+	 *
+	 * Assumes there are neither duplicated nor orphaned capabilities meta_values.
+	 * Assumes role names are unique phrases. Same assumption made by WP_User_Query::prepare_query()
+	 * Using $strategy = 'time' this is CPU-intensive and should handle around 10^7 users.
+	 * Using $strategy = 'memory' this is memory-intensive and should handle around 10^5 users, but see WP Bug #12257.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @global wpdb $wpdb WordPress database abstraction object.
+	 *
+	 * @param string $strategy 'time' or 'memory'.
+	 * @return array Includes a grand total and an array of counts indexed by role strings.
+	 */
+	function count_network_users( $strategy = 'time' ) {
+		global $wpdb;
 
-	if ( 'time' === $strategy ) {
-		$avail_roles = wp_network_roles()->get_names();
+		$id = get_current_network_id();
+		$network_prefix = $wpdb->base_prefix . 'network_' . $id . '_';
+		$result = array();
 
-		$select_count = array();
-		foreach ( $avail_roles as $slug => $name ) {
-			$select_count[] = $wpdb->prepare( "COUNT(NULLIF(`meta_value` LIKE %s, false))", '%' . $wpdb->esc_like( '"' . $slug . '"' ) . '%' );
-		}
-		$select_count[] = "COUNT(NULLIF(`meta_value` = 'a:0:{}', false))";
-		$select_count = implode( ', ', $select_count );
+		if ( 'time' === $strategy ) {
+			$avail_roles = wp_network_roles()->get_names();
 
-		$row = $wpdb->get_row( "SELECT $select_count, COUNT(*) FROM $wpdb->usermeta WHERE meta_key = '{$network_prefix}capabilities'", ARRAY_N );
-
-		$col = 0;
-		$role_counts = array();
-		foreach ( $avail_roles as $slug => $name ) {
-			$count = (int) $row[ $col++ ];
-			if ( $count > 0 ) {
-				$role_counts[ $slug ] = $count;
+			$select_count = array();
+			foreach ( $avail_roles as $slug => $name ) {
+				$select_count[] = $wpdb->prepare( 'COUNT(NULLIF(`meta_value` LIKE %s, false))', '%' . $wpdb->esc_like( '"' . $slug . '"' ) . '%' );
 			}
-		}
+			$select_count[] = "COUNT(NULLIF(`meta_value` = 'a:0:{}', false))";
+			$select_count = implode( ', ', $select_count );
 
-		$role_counts['none'] = (int) $row[ $col++ ];
+			$row = $wpdb->get_row( "SELECT $select_count, COUNT(*) FROM $wpdb->usermeta WHERE meta_key = '{$network_prefix}capabilities'", ARRAY_N ); // WPCS: db call ok.
 
-		$result['total_users'] = (int) $row[ $col ];
-		$result['avail_roles'] =& $role_counts;
-	} else {
-		$avail_roles = array( 'none' => 0 );
-
-		$users_of_network = $wpdb->get_col( "SELECT meta_value FROM $wpdb->usermeta WHERE meta_key = '{$network_prefix}capabilities'" );
-
-		foreach ( $users_of_network as $caps_meta ) {
-			$network_roles = maybe_unserialize( $caps_meta );
-			if ( ! is_array( $network_roles ) ) {
-				continue;
-			}
-
-			if ( empty( $network_roles ) ) {
-				$avail_roles['none']++;
-			}
-
-			foreach ( $network_roles as $network_role => $val ) {
-				if ( isset( $avail_roles[ $network_role ] ) ) {
-					$avail_roles[ $network_role ]++;
-				} else {
-					$avail_roles[ $network_role ] = 1;
+			$col = 0;
+			$role_counts = array();
+			foreach ( $avail_roles as $slug => $name ) {
+				$count = (int) $row[ $col++ ];
+				if ( $count > 0 ) {
+					$role_counts[ $slug ] = $count;
 				}
 			}
+
+			$role_counts['none'] = (int) $row[ $col++ ];
+
+			$result['total_users'] = (int) $row[ $col ];
+			$result['avail_roles'] =& $role_counts;
+		} else {
+			$avail_roles = array( 'none' => 0 );
+
+			$users_of_network = $wpdb->get_col( "SELECT meta_value FROM $wpdb->usermeta WHERE meta_key = '{$network_prefix}capabilities'" ); // WPCS: db call ok.
+
+			foreach ( $users_of_network as $caps_meta ) {
+				$network_roles = maybe_unserialize( $caps_meta );
+				if ( ! is_array( $network_roles ) ) {
+					continue;
+				}
+
+				if ( empty( $network_roles ) ) {
+					$avail_roles['none']++;
+				}
+
+				foreach ( $network_roles as $network_role => $val ) {
+					if ( isset( $avail_roles[ $network_role ] ) ) {
+						$avail_roles[ $network_role ]++;
+					} else {
+						$avail_roles[ $network_role ] = 1;
+					}
+				}
+			}
+
+			$result['total_users'] = count( $users_of_network );
+			$result['avail_roles'] =& $avail_roles;
 		}
 
-		$result['total_users'] = count( $users_of_network );
-		$result['avail_roles'] =& $avail_roles;
+		return $result;
 	}
 
-	return $result;
-}
 endif;
 
 if ( ! function_exists( 'wp_get_users_with_no_network_role' ) ) :
-/**
- * Gets the user IDs of all users with no role on this network.
- *
- * @since 1.0.0
- *
- * @global wpdb $wpdb WordPress database abstraction object.
- *
- * @return array Array of user IDs.
- */
-function wp_get_users_with_no_network_role() {
-	global $wpdb;
 
-	$network_prefix = $wpdb->base_prefix . 'network_' . get_current_network_id() . '_';
+	/**
+	 * Gets the user IDs of all users with no role on this network.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @global wpdb $wpdb WordPress database abstraction object.
+	 *
+	 * @return array Array of user IDs.
+	 */
+	function wp_get_users_with_no_network_role() {
+		global $wpdb;
 
-	$regex = implode( '|', array_keys( wp_network_roles()->get_names() ) );
-	$regex = preg_replace( '/[^a-zA-Z_\|-]/', '', $regex );
+		$network_prefix = $wpdb->base_prefix . 'network_' . get_current_network_id() . '_';
 
-	$users = $wpdb->get_col( $wpdb->prepare( "SELECT user_id FROM $wpdb->usermeta WHERE meta_key = '{$network_prefix}capabilities' AND meta_value NOT REGEXP %s", $regex ) );
+		$regex = implode( '|', array_keys( wp_network_roles()->get_names() ) );
+		$regex = preg_replace( '/[^a-zA-Z_\|-]/', '', $regex );
 
-	return $users;
-}
+		$users = $wpdb->get_col( $wpdb->prepare( "SELECT user_id FROM $wpdb->usermeta WHERE meta_key = '{$network_prefix}capabilities' AND meta_value NOT REGEXP %s", $regex ) ); // WPCS: db call ok.
+
+		return $users;
+	}
+
 endif;
 
 if ( ! function_exists( 'translate_network_user_role' ) ) :
-/**
- * Translates a network role name.
- *
- * Since the role names are in the database and not in the source there
- * are dummy gettext calls to get them into the POT file and this function
- * properly translates them back.
- *
- * @since 1.0.0
- *
- * @param string $name The network role name.
- * @return string Translated network role name on success, original name on failure.
- */
-function translate_network_user_role( $name ) {
-	return translate_with_gettext_context( before_last_bar( $name ), 'Network user role' );
-}
+
+	/**
+	 * Translates a network role name.
+	 *
+	 * Since the role names are in the database and not in the source there
+	 * are dummy gettext calls to get them into the POT file and this function
+	 * properly translates them back.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param string $name The network role name.
+	 * @return string Translated network role name on success, original name on failure.
+	 */
+	function translate_network_user_role( $name ) {
+		return translate_with_gettext_context( before_last_bar( $name ), 'Network user role' );
+	}
+
 endif;
 
 /**
@@ -279,6 +287,9 @@ endif;
  *
  * @since 1.0.0
  * @access private
+ *
+ * @global wpdb  $wpdb                  WordPress database abstraction object.
+ * @global array $_nr_network_role_data Internal storage for network roles of users.
  *
  * @param int $user_id    User ID.
  * @param int $network_id Optional. Network ID. Default is the current network ID.
@@ -300,7 +311,7 @@ function _nr_get_network_role_caps_for_user( $user_id, $network_id = 0 ) {
 		$_nr_network_role_data[ $user_id ][ $network_id ] = array();
 	}
 
-	$_nr_network_role_data[ $user_id ][ $network_id ]['caps'] = get_user_meta( $user_id, $network_cap_key, true );
+	$_nr_network_role_data[ $user_id ][ $network_id ]['caps'] = get_user_meta( $user_id, $network_cap_key, true ); // phpcs:ignore WordPress.VIP.RestrictedFunctions
 	if ( ! is_array( $_nr_network_role_data[ $user_id ][ $network_id ]['caps'] ) ) {
 		$_nr_network_role_data[ $user_id ][ $network_id ]['caps'] = array();
 	}
@@ -316,7 +327,7 @@ function _nr_get_network_role_caps_for_user( $user_id, $network_id = 0 ) {
 
 	$_nr_network_role_data[ $user_id ][ $network_id ]['roles'] = array_filter( array_keys( $_nr_network_role_data[ $user_id ][ $network_id ]['caps'] ), array( $wp_network_roles, 'is_role' ) );
 
-	// Build $allcaps from role caps, overlay user's $caps
+	// Build $allcaps from role caps, overlay user's $caps.
 	$_nr_network_role_data[ $user_id ][ $network_id ]['allcaps'] = array();
 	foreach ( (array) $_nr_network_role_data[ $user_id ][ $network_id ]['roles'] as $role ) {
 		$the_role = $wp_network_roles->get_role( $role );
@@ -334,6 +345,8 @@ function _nr_get_network_role_caps_for_user( $user_id, $network_id = 0 ) {
  *
  * @since 1.0.0
  * @access private
+ *
+ * @global array $_nr_network_role_data Internal storage for network roles of users.
  *
  * @param array   $allcaps Array of all the user's capabilities.
  * @param array   $caps    Actual capabilities for meta capability.
@@ -365,6 +378,8 @@ add_filter( 'user_has_cap', '_nr_filter_user_has_cap', 1, 4 );
  * @since 1.0.0
  * @access private
  *
+ * @global wpdb $wpdb WordPress database abstraction object.
+ *
  * @param WP_User_Query $query User query instance.
  */
 function _nr_support_network_role_in_user_query( $query ) {
@@ -395,7 +410,6 @@ function _nr_support_network_role_in_user_query( $query ) {
 		$network_role__not_in = (array) $query->query_vars['network_role__not_in'];
 	}
 
-	//TODO: Instead of is_multisite(), it would be great if we could check for is_multinetwork() here.
 	if ( $network_id && ( ! empty( $network_roles ) || ! empty( $network_role__in ) || ! empty( $network_role__not_in ) || is_multisite() ) ) {
 		$network_role_queries = array();
 
@@ -441,7 +455,7 @@ function _nr_support_network_role_in_user_query( $query ) {
 		// If there are no specific roles named, make sure the user is a member of the site.
 		if ( empty( $network_role_queries ) ) {
 			$network_role_queries[] = array(
-				'key' => $wpdb->base_prefix . 'network_' . $network_id . '_capabilities',
+				'key'     => $wpdb->base_prefix . 'network_' . $network_id . '_capabilities',
 				'compare' => 'EXISTS',
 			);
 		}
@@ -451,7 +465,7 @@ function _nr_support_network_role_in_user_query( $query ) {
 
 		$old_clauses = false;
 		if ( ! empty( $query->meta_query->queries ) ) {
-			$old_clauses = $query->meta_query->get_sql( 'user', $wpdb->users, 'ID', $this );
+			$old_clauses = $query->meta_query->get_sql( 'user', $wpdb->users, 'ID', $this ); // phpcs:ignore WordPress.VIP.RestrictedVariables
 		}
 
 		if ( empty( $query->meta_query->queries ) ) {
@@ -467,17 +481,17 @@ function _nr_support_network_role_in_user_query( $query ) {
 		$query->meta_query->parse_query_vars( $query->meta_query->queries );
 
 		if ( ! empty( $query->meta_query->queries ) ) {
-			$clauses = $query->meta_query->get_sql( 'user', $wpdb->users, 'ID', $query );
+			$clauses = $query->meta_query->get_sql( 'user', $wpdb->users, 'ID', $query ); // phpcs:ignore WordPress.VIP.RestrictedVariables
 
 			if ( $old_clauses ) {
-				$query->query_from = str_replace( $old_clauses['join'], $clauses['join'], $query->query_from );
+				$query->query_from  = str_replace( $old_clauses['join'], $clauses['join'], $query->query_from );
 				$query->query_where = str_replace( $old_clauses['where'], $clauses['where'], $query->query_where );
 
 				if ( $query->meta_query->has_or_relation() && false === strpos( $query->query_fields, 'DISTINCT ' ) ) {
 					$query->query_fields = 'DISTINCT ' . $query->query_fields;
 				}
 			} else {
-				$query->query_from .= $clauses['join'];
+				$query->query_from  .= $clauses['join'];
 				$query->query_where .= $clauses['where'];
 
 				if ( $query->meta_query->has_or_relation() ) {

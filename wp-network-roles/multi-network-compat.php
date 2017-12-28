@@ -18,7 +18,7 @@
 function _nr_switched_network( $new_network_id, $old_network_id ) {
 	global $_nr_network_role_data;
 
-	if ( $new_network_id == $old_network_id ) {
+	if ( (int) $new_network_id === (int) $old_network_id ) {
 		return;
 	}
 
