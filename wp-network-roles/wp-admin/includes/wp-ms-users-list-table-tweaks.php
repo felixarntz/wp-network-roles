@@ -84,15 +84,27 @@ add_filter( 'manage_users_custom_column', '_nr_ms_users_column_role', 10, 3 );
  * @since 1.0.0
  * @access private
  *
+ * @global array $wpnr_users_with_network_roles Internal storage for user objects with network roles.
+ *
  * @param WP_User $user User object.
  * @return array Array of role names.
  */
 function _nr_ms_users_get_role_list( $user ) {
+	global $wpnr_users_with_network_roles;
+
+	$network_id = get_current_network_id();
+
+	if ( ! isset( $wpnr_users_with_network_roles[ $user->ID ] ) ) {
+		$wpnr_users_with_network_roles[ $user->ID ] = new WPNR_User_With_Network_Roles( $user->ID, $network_id );
+	} elseif ( $wpnr_users_with_network_roles[ $user->ID ]->get_network_id() !== $network_id ) {
+		$wpnr_users_with_network_roles[ $user->ID ]->for_network( $network_id );
+	}
+
 	$wp_network_roles = wp_network_roles();
 
 	$role_list = array();
 
-	foreach ( nr_get_network_roles_for_user( $user->ID ) as $role ) {
+	foreach ( $wpnr_users_with_network_roles[ $user->ID ]->network_roles as $role ) {
 		if ( isset( $wp_network_roles->role_names[ $role ] ) ) {
 			$role_list[ $role ] = translate_network_user_role( $wp_network_roles->role_names[ $role ] );
 		}
@@ -130,6 +142,8 @@ function _nr_ms_users_override_views( $views ) {
 	$class = empty( $role ) ? ' class="current"' : '';
 
 	$role_links = array();
+
+	/* translators: %s: user count */
 	$role_links['all'] = "<a href='$url'$class>" . sprintf( _nx( 'All <span class="count">(%s)</span>', 'All <span class="count">(%s)</span>', $total_users, 'network users' ), number_format_i18n( $total_users ) ) . '</a>';
 	foreach ( $wp_network_roles->get_names() as $slug => $name ) {
 		if ( ! isset( $avail_roles[ $slug ] ) ) {
@@ -139,8 +153,8 @@ function _nr_ms_users_override_views( $views ) {
 		$class = $slug === $role ? ' class="current"' : '';
 
 		$name = translate_network_user_role( $name );
-		/* translators: User role name with count */
-		$name = sprintf( __( '%1$s <span class="count">(%2$s)</span>' ), $name, number_format_i18n( $avail_roles[ $slug ] ) );
+		/* translators: 1: user role name, 2: user count */
+		$name                = sprintf( __( '%1$s <span class="count">(%2$s)</span>' ), $name, number_format_i18n( $avail_roles[ $slug ] ) );
 		$role_links[ $slug ] = "<a href='" . esc_url( add_query_arg( 'role', $slug, $url ) ) . "'$class>$name</a>";
 	}
 
@@ -148,8 +162,9 @@ function _nr_ms_users_override_views( $views ) {
 		$class = 'none' === $role ? ' class="current"' : '';
 
 		$name = __( 'No role' );
-		/* translators: User role name with count */
-		$name = sprintf( __( '%1$s <span class="count">(%2$s)</span>' ), $name, number_format_i18n( $avail_roles['none' ] ) );
+
+		/* translators: 1: user role name, 2: user count */
+		$name               = sprintf( __( '%1$s <span class="count">(%2$s)</span>' ), $name, number_format_i18n( $avail_roles['none'] ) );
 		$role_links['none'] = "<a href='" . esc_url( add_query_arg( 'role', 'none', $url ) ) . "'$class>$name</a>";
 	}
 
