@@ -30,7 +30,11 @@ function _nr_filter_super_admins( $pre, $option, $network_id, $default ) {
 	) );
 
 	if ( empty( $users ) ) {
-		return $default;
+		if ( nr_is_user_network_migration_done() ) {
+			return array();
+		}
+
+		return $pre;
 	}
 
 	return wp_list_pluck( $users, 'user_login' );

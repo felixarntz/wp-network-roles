@@ -107,7 +107,7 @@ function _nr_maybe_migrate_user_network_relationships() {
 			$network_cap_key = $wpdb->base_prefix . 'network_' . $network_id . '_capabilities';
 			$network_caps    = array();
 			if ( in_array( $user->user_login, $network_super_admins[ $network_id ], true ) ) {
-				$network_caps[] = 'administrator';
+				$network_caps['administrator'] = true;
 			}
 
 			update_user_meta( $user->ID, $network_cap_key, $network_caps ); // phpcs:ignore WordPress.VIP.RestrictedFunctions
@@ -120,3 +120,4 @@ function _nr_maybe_migrate_user_network_relationships() {
 		update_network_option( get_main_network_id(), '_nr_user_network_migration_done', '1' );
 	}
 }
+add_action( 'init', '_nr_maybe_migrate_user_network_relationships', 1, 0 );
