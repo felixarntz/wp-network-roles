@@ -16,10 +16,10 @@ if ( ! class_exists( 'WP_Network_Roles' ) ) :
 	 * in the value of the 'capability' key.
 	 *
 	 *     array (
-	 *    		'rolename' => array (
-	 *    			'name' => 'rolename',
-	 *    			'capabilities' => array()
-	 *    		)
+	 *         'rolename' => array (
+	 *             'name'         => 'rolename',
+	 *             'capabilities' => array()
+	 *         )
 	 *     )
 	 *
 	 * @since 1.0.0
@@ -185,10 +185,10 @@ if ( ! class_exists( 'WP_Network_Roles' ) ) :
 			}
 
 			$this->role_objects = array();
-			$this->role_names =  array();
+			$this->role_names   = array();
 			foreach ( array_keys( $this->roles ) as $role ) {
 				$this->role_objects[ $role ] = new WP_Network_Role( $role, $this->roles[ $role ]['capabilities'] );
-				$this->role_names[ $role ] = $this->roles[ $role ]['name'];
+				$this->role_names[ $role ]   = $this->roles[ $role ]['name'];
 			}
 
 			/**
