@@ -231,26 +231,6 @@ if ( ! function_exists( 'wp_get_users_with_no_network_role' ) ) :
 
 endif;
 
-if ( ! function_exists( 'translate_network_user_role' ) ) :
-
-	/**
-	 * Translates a network role name.
-	 *
-	 * Since the role names are in the database and not in the source there
-	 * are dummy gettext calls to get them into the POT file and this function
-	 * properly translates them back.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @param string $name The network role name.
-	 * @return string Translated network role name on success, original name on failure.
-	 */
-	function translate_network_user_role( $name ) {
-		return translate_with_gettext_context( before_last_bar( $name ), 'Network user role' );
-	}
-
-endif;
-
 /**
  * Gets the user with network roles instance for a regular user instance.
  *

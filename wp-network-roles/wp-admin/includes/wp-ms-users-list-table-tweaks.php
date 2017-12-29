@@ -95,7 +95,7 @@ function _nr_ms_users_get_role_list( $user ) {
 	$role_list = array();
 	foreach ( $nr_user->network_roles as $role ) {
 		if ( isset( $wp_network_roles->role_names[ $role ] ) ) {
-			$role_list[ $role ] = translate_network_user_role( $wp_network_roles->role_names[ $role ] );
+			$role_list[ $role ] = $wp_network_roles->role_names[ $role ];
 		}
 	}
 
@@ -141,7 +141,6 @@ function _nr_ms_users_override_views( $views ) {
 
 		$class = $slug === $role ? ' class="current"' : '';
 
-		$name = translate_network_user_role( $name );
 		/* translators: 1: user role name, 2: user count */
 		$name                = sprintf( __( '%1$s <span class="count">(%2$s)</span>' ), $name, number_format_i18n( $avail_roles[ $slug ] ) );
 		$role_links[ $slug ] = "<a href='" . esc_url( add_query_arg( 'role', $slug, $url ) ) . "'$class>$name</a>";

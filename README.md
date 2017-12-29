@@ -40,7 +40,6 @@ The plugin can either be installed as a network-wide regular plugin or alternati
   * `get_networks_of_user()`
   * `count_network_users()`
   * `wp_get_users_with_no_network_role()`
-  * `translate_network_user_role()`
   * `WP_Network_Role`
   * `WP_Network_Roles`
 
