@@ -20,18 +20,30 @@ if ( ! function_exists( 'count_network_users' ) ) :
 	 *
 	 * @global wpdb $wpdb WordPress database abstraction object.
 	 *
-	 * @param string $strategy 'time' or 'memory'.
+	 * @param string   $strategy   Optional. The computational strategy to use when counting the users.
+	 *                             Accepts either 'time' or 'memory'. Default 'time'.
+	 * @param int|null $network_id Optional. The network ID to count users for. Defaults to the current network.
 	 * @return array Includes a grand total and an array of counts indexed by role strings.
 	 */
-	function count_network_users( $strategy = 'time' ) {
+	function count_network_users( $strategy = 'time', $network_id = null ) {
 		global $wpdb;
 
-		$id = get_current_network_id();
-		$network_prefix = $wpdb->base_prefix . 'network_' . $id . '_';
+		if ( ! $network_id ) {
+			$network_id = get_current_network_id();
+		}
+
+		$network_prefix = $wpdb->base_prefix . 'network_' . $network_id . '_';
 		$result = array();
 
 		if ( 'time' === $strategy ) {
-			$avail_roles = wp_network_roles()->get_names();
+			$original_network_id = wp_network_roles()->get_network_id();
+			if ( is_multisite() && $original_network_id !== (int) $network_id ) {
+				wp_network_roles()->for_network( $network_id );
+				$avail_roles = wp_network_roles()->get_names();
+				wp_network_roles()->for_network( $original_network_id );
+			} else {
+				$avail_roles = wp_network_roles()->get_names();
+			}
 
 			$select_count = array();
 			foreach ( $avail_roles as $slug => $name ) {
@@ -97,14 +109,28 @@ if ( ! function_exists( 'wp_get_users_with_no_network_role' ) ) :
 	 *
 	 * @global wpdb $wpdb WordPress database abstraction object.
 	 *
+	 * @param int|null $network_id Optional. The network ID to get users with no network role for. Defaults to the current network.
 	 * @return array Array of user IDs.
 	 */
-	function wp_get_users_with_no_network_role() {
+	function wp_get_users_with_no_network_role( $network_id = null ) {
 		global $wpdb;
 
-		$network_prefix = $wpdb->base_prefix . 'network_' . get_current_network_id() . '_';
+		if ( ! $network_id ) {
+			$network_id = get_current_network_id();
+		}
 
-		$regex = implode( '|', array_keys( wp_network_roles()->get_names() ) );
+		$network_prefix = $wpdb->base_prefix . 'network_' . $network_id . '_';
+
+		$original_network_id = wp_network_roles()->get_network_id();
+		if ( is_multisite() && $original_network_id !== (int) $network_id ) {
+			wp_network_roles()->for_network( $network_id );
+			$role_names = wp_network_roles()->get_names();
+			wp_network_roles()->for_network( $original_network_id );
+		} else {
+			$role_names = wp_network_roles()->get_names();
+		}
+
+		$regex = implode( '|', array_keys( $role_names ) );
 		$regex = preg_replace( '/[^a-zA-Z_\|-]/', '', $regex );
 
 		$users = $wpdb->get_col( $wpdb->prepare( "SELECT user_id FROM $wpdb->usermeta WHERE meta_key = '{$network_prefix}capabilities' AND meta_value NOT REGEXP %s", $regex ) ); // WPCS: db call ok.
