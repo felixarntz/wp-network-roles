@@ -46,7 +46,7 @@ function _nr_ms_users_override_columns( $columns ) {
 
 	$last_columns = array_diff_key( $columns, $first_columns );
 
-	return array_merge( $first_columns, array( 'role' => __( 'Network Role' ) ), $last_columns );
+	return array_merge( $first_columns, array( 'role' => _x( 'Network Role', 'list table column', 'wp-network-roles' ) ), $last_columns );
 }
 add_filter( 'wpmu_users_columns', '_nr_ms_users_override_columns' );
 
@@ -142,17 +142,17 @@ function _nr_ms_users_override_views( $views ) {
 		$class = $slug === $role ? ' class="current"' : '';
 
 		/* translators: 1: user role name, 2: user count */
-		$name                = sprintf( __( '%1$s <span class="count">(%2$s)</span>' ), $name, number_format_i18n( $avail_roles[ $slug ] ) );
+		$name                = sprintf( __( '%1$s <span class="count">(%2$s)</span>', 'wp-network-roles' ), $name, number_format_i18n( $avail_roles[ $slug ] ) );
 		$role_links[ $slug ] = "<a href='" . esc_url( add_query_arg( 'role', $slug, $url ) ) . "'$class>$name</a>";
 	}
 
 	if ( ! empty( $avail_roles['none'] ) ) {
 		$class = 'none' === $role ? ' class="current"' : '';
 
-		$name = __( 'No role' );
+		$name = __( 'No role', 'wp-network-roles' );
 
 		/* translators: 1: user role name, 2: user count */
-		$name               = sprintf( __( '%1$s <span class="count">(%2$s)</span>' ), $name, number_format_i18n( $avail_roles['none'] ) );
+		$name               = sprintf( __( '%1$s <span class="count">(%2$s)</span>', 'wp-network-roles' ), $name, number_format_i18n( $avail_roles['none'] ) );
 		$role_links['none'] = "<a href='" . esc_url( add_query_arg( 'role', 'none', $url ) ) . "'$class>$name</a>";
 	}
 

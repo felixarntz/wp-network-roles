@@ -20,6 +20,15 @@
  */
 
 /**
+ * Loads the plugin textdomain.
+ *
+ * @since 1.0.0
+ */
+function nr_load_textdomain() {
+	load_plugin_textdomain( 'wp-network-roles' );
+}
+
+/**
  * Initializes the plugin.
  *
  * Loads the required files.
@@ -103,6 +112,8 @@ function nr_activate_on_new_network( $network_options ) {
 
 	return $network_options;
 }
+
+add_action( 'plugins_loaded', 'nr_load_textdomain', 1 );
 
 if ( version_compare( $GLOBALS['wp_version'], '4.9', '<' ) ) {
 	add_action( 'admin_notices', 'nr_requirements_notice' );

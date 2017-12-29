@@ -28,7 +28,7 @@ function _nr_get_initial_network_roles() {
 	return array(
 		array(
 			'role'         => 'administrator',
-			'display_name' => __( 'Administrator' ),
+			'display_name' => _x( 'Administrator', 'network role', 'wp-network-roles' ),
 			'capabilities' => array_fill_keys( array(
 				'manage_network',
 				'manage_sites',
@@ -40,7 +40,7 @@ function _nr_get_initial_network_roles() {
 		),
 		array(
 			'role'         => 'member',
-			'display_name' => __( 'Member' ),
+			'display_name' => _x( 'Member', 'network role', 'wp-network-roles' ),
 			'capabilities' => array(),
 		),
 	);
