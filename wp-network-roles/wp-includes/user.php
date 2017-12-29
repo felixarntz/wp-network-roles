@@ -6,6 +6,97 @@
  * @since 1.0.0
  */
 
+if ( ! function_exists( 'get_networks_of_user' ) ) :
+
+	/**
+	 * Gets the networks a user belongs to.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @global wpdb $wpdb WordPress database abstraction object.
+	 *
+	 * @param int $user_id User ID
+	 * @return array A list of the user's networks. An empty array if the user doesn't exist
+	 *               or belongs to no networks.
+	 */
+	function get_networks_of_user( $user_id ) {
+		global $wpdb;
+
+		if ( ! is_multisite() ) {
+			return array();
+		}
+
+		$user_id = (int) $user_id;
+
+		// Logged out users can't have networks.
+		if ( empty( $user_id ) ) {
+			return array();
+		}
+
+		/**
+		 * Filters the list of a user's networks before it is populated.
+		 *
+		 * Passing a non-null value to the filter will effectively short circuit
+		 * get_networks_of_user(), returning that value instead.
+		 *
+		 * @since 1.0.0
+		 *
+		 * @param null|array $networks An array of network objects of which the user is a member.
+		 * @param int        $user_id  User ID.
+		 */
+		$networks = apply_filters( 'pre_get_networks_of_user', null, $user_id );
+
+		if ( null !== $networks ) {
+			return $networks;
+		}
+
+		$keys = get_user_meta( $user_id ); // phpcs:ignore WordPress.VIP.RestrictedFunctions
+		if ( empty( $keys ) ) {
+			return array();
+		}
+
+		$keys = array_keys( $keys );
+
+		$network_ids = array();
+		foreach ( $keys as $key ) {
+			if ( 'capabilities' !== substr( $key, -12 ) ) {
+				continue;
+			}
+
+			if ( $wpdb->base_prefix && 0 !== strpos( $key, $wpdb->base_prefix . 'network_' ) ) {
+				continue;
+			}
+
+			$network_id = str_replace( array( $wpdb->base_prefix . 'network_', '_capabilities' ), '', $key );
+			if ( ! is_numeric( $network_id ) ) {
+				continue;
+			}
+
+			$network_ids[] = (int) $network_id;
+		}
+
+		$networks = array();
+
+		if ( ! empty( $network_ids ) ) {
+			$networks = get_networks( array(
+				'number'      => '',
+				'network__in' => $network_ids,
+			) );
+		}
+
+		/**
+		 * Filters the list of networks a user belongs to.
+		 *
+		 * @since 1.0.0
+		 *
+		 * @param array $networks An array of network objects belonging to the user.
+		 * @param int   $user_id  User ID.
+		 */
+		return apply_filters( 'get_networks_of_user', $networks, $user_id );
+	}
+
+endif;
+
 if ( ! function_exists( 'count_network_users' ) ) :
 
 	/**
