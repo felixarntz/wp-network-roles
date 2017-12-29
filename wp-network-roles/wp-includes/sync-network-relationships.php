@@ -43,53 +43,6 @@ function _nr_maybe_add_user_to_network( $user_id, $role, $site_id ) {
 add_action( 'add_user_to_blog', '_nr_maybe_add_user_to_network', 10, 3 );
 
 /**
- * Maybe removes a user from a network when they're removed from a site.
- *
- * The user is only removed from the site's network if there aren't any other site's in that network which they are a
- * member of. Furthermore the user is not removed if they have been granted an actual capability on the network.
- *
- * @since 1.0.0
- * @access private
- *
- * @param int $user_id User ID.
- * @param int $site_id Site ID.
- */
-function _nr_maybe_remove_user_from_network( $user_id, $site_id ) {
-	if ( ! $site_id ) {
-		return;
-	}
-
-	$site = get_site( $site_id );
-	if ( ! $site ) {
-		return;
-	}
-
-	$network_id = $site->network_id;
-
-	$blogs = get_blogs_of_user( $user_id );
-	if ( empty( $blogs ) ) {
-		return;
-	}
-
-	foreach ( $blogs as $blog ) {
-		// Bail if there is still another site in the network which the user is part of.
-		if ( (int) $blog->site_id === $network_id && (int) $blog->userblog_id !== $site->id ) {
-			return;
-		}
-	}
-
-	$nr_user = nr_get_user_with_network_roles( get_userdata( $user_id ) );
-	if ( $nr_user->get_network_id() !== $network_id ) {
-		$nr_user->for_network( $network_id );
-	}
-
-	if ( empty( $nr_user->network_caps ) || 1 === count( $nr_user->network_caps ) && isset( $nr_user->network_caps['member'] ) ) {
-		$nr_user->remove_all_network_caps();
-	}
-}
-add_action( 'remove_user_from_blog', '_nr_maybe_remove_user_from_network', 10, 2 );
-
-/**
  * Sets the initial network relationship on a new user.
  *
  * The user is added to the network of the current site.
