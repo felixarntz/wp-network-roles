@@ -37,7 +37,7 @@ function _nr_maybe_add_user_to_network( $user_id, $role, $site_id ) {
 	}
 
 	if ( empty( $nr_user->network_caps ) ) {
-		$nr_user->set_network_role( '' );
+		$nr_user->set_network_role( 'member' );
 	}
 }
 add_action( 'add_user_to_blog', '_nr_maybe_add_user_to_network', 10, 3 );
@@ -83,7 +83,7 @@ function _nr_maybe_remove_user_from_network( $user_id, $site_id ) {
 		$nr_user->for_network( $network_id );
 	}
 
-	if ( empty( $nr_user->network_caps ) ) {
+	if ( empty( $nr_user->network_caps ) || 1 === count( $nr_user->network_caps ) && isset( $nr_user->network_caps['member'] ) ) {
 		$nr_user->remove_all_network_caps();
 	}
 }

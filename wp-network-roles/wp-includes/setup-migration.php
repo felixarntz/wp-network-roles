@@ -28,7 +28,7 @@ function _nr_get_initial_network_roles() {
 	return array(
 		array(
 			'role'         => 'administrator',
-			'display_name' => __( 'Network Administrator' ),
+			'display_name' => __( 'Administrator' ),
 			'capabilities' => array_fill_keys( array(
 				'manage_network',
 				'manage_sites',
@@ -37,6 +37,11 @@ function _nr_get_initial_network_roles() {
 				'manage_network_plugins',
 				'manage_network_options',
 			), true ),
+		),
+		array(
+			'role'         => 'member',
+			'display_name' => __( 'Member' ),
+			'capabilities' => array(),
 		),
 	);
 }
@@ -147,9 +152,16 @@ function _nr_maybe_migrate_user_network_relationships() {
 			}
 
 			$network_cap_key = $wpdb->base_prefix . 'network_' . $network_id . '_capabilities';
-			$network_caps    = array();
+
+			if ( get_user_meta( $user->ID, $network_cap_key, true ) ) { // phpcs:ignore WordPress.VIP.RestrictedFunctions
+				continue;
+			}
+
+			$network_caps = array();
 			if ( in_array( $user->user_login, $network_super_admins[ $network_id ], true ) ) {
 				$network_caps['administrator'] = true;
+			} else {
+				$network_caps['member'] = true;
 			}
 
 			update_user_meta( $user->ID, $network_cap_key, $network_caps ); // phpcs:ignore WordPress.VIP.RestrictedFunctions
