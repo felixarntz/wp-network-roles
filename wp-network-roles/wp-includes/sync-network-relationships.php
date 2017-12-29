@@ -15,15 +15,11 @@
  * @since 1.0.0
  * @access private
  *
- * @global array $wpnr_users_with_network_roles Internal storage for user objects with network roles.
- *
  * @param int    $user_id User ID.
  * @param string $role    New role on the site.
  * @param int    $site_id Site ID.
  */
 function _nr_maybe_add_user_to_network( $user_id, $role, $site_id ) {
-	global $wpnr_users_with_network_roles;
-
 	if ( ! $site_id ) {
 		return;
 	}
@@ -35,14 +31,13 @@ function _nr_maybe_add_user_to_network( $user_id, $role, $site_id ) {
 
 	$network_id = $site->network_id;
 
-	if ( ! isset( $wpnr_users_with_network_roles[ $user_id ] ) ) {
-		$wpnr_users_with_network_roles[ $user_id ] = new WPNR_User_With_Network_Roles( $user_id, $network_id );
-	} elseif ( $wpnr_users_with_network_roles[ $user_id ]->get_network_id() !== $network_id ) {
-		$wpnr_users_with_network_roles[ $user_id ]->for_network( $network_id );
+	$nr_user = nr_get_user_with_network_roles( get_userdata( $user_id ) );
+	if ( $nr_user->get_network_id() !== $network_id ) {
+		$nr_user->for_network( $network_id );
 	}
 
-	if ( empty( $wpnr_users_with_network_roles[ $user_id ]->network_caps ) ) {
-		$wpnr_users_with_network_roles[ $user_id ]->set_network_role( '' );
+	if ( empty( $nr_user->network_caps ) ) {
+		$nr_user->set_network_role( '' );
 	}
 }
 add_action( 'add_user_to_blog', '_nr_maybe_add_user_to_network', 10, 3 );
@@ -56,14 +51,10 @@ add_action( 'add_user_to_blog', '_nr_maybe_add_user_to_network', 10, 3 );
  * @since 1.0.0
  * @access private
  *
- * @global array $wpnr_users_with_network_roles Internal storage for user objects with network roles.
- *
  * @param int $user_id User ID.
  * @param int $site_id Site ID.
  */
 function _nr_maybe_remove_user_from_network( $user_id, $site_id ) {
-	global $wpnr_users_with_network_roles;
-
 	if ( ! $site_id ) {
 		return;
 	}
@@ -87,14 +78,13 @@ function _nr_maybe_remove_user_from_network( $user_id, $site_id ) {
 		}
 	}
 
-	if ( ! isset( $wpnr_users_with_network_roles[ $user_id ] ) ) {
-		$wpnr_users_with_network_roles[ $user_id ] = new WPNR_User_With_Network_Roles( $user_id, $network_id );
-	} elseif ( $wpnr_users_with_network_roles[ $user_id ]->get_network_id() !== $network_id ) {
-		$wpnr_users_with_network_roles[ $user_id ]->for_network( $network_id );
+	$nr_user = nr_get_user_with_network_roles( get_userdata( $user_id ) );
+	if ( $nr_user->get_network_id() !== $network_id ) {
+		$nr_user->for_network( $network_id );
 	}
 
-	if ( empty( $wpnr_users_with_network_roles[ $user_id ]->network_caps ) ) {
-		$wpnr_users_with_network_roles[ $user_id ]->remove_all_network_caps();
+	if ( empty( $nr_user->network_caps ) ) {
+		$nr_user->remove_all_network_caps();
 	}
 }
 add_action( 'remove_user_from_blog', '_nr_maybe_remove_user_from_network', 10, 2 );

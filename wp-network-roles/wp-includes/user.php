@@ -135,12 +135,33 @@ if ( ! function_exists( 'translate_network_user_role' ) ) :
 endif;
 
 /**
+ * Gets the user with network roles instance for a regular user instance.
+ *
+ * @since 1.0.0
+ *
+ * @param WP_User $user User instance.
+ * @return WPNR_User_With_Network_Roles User with network roles instance.
+ */
+function nr_get_user_with_network_roles( $user ) {
+	if ( ! isset( $user->network_roles ) ) {
+		$site = get_site( $user->get_site_id() );
+		if ( $site ) {
+			$network_id = $site->network_id;
+		} else {
+			$network_id = get_current_network_id();
+		}
+
+		$user->network_roles = new WPNR_User_With_Network_Roles( $user->ID, $network_id );
+	}
+
+	return $user->network_roles;
+}
+
+/**
  * Adds the network capabilities to a user's regular capabilities.
  *
  * @since 1.0.0
  * @access private
- *
- * @global array $wpnr_users_with_network_roles Internal storage for user objects with network roles.
  *
  * @param array   $allcaps Array of all the user's capabilities.
  * @param array   $caps    Actual capabilities for meta capability.
@@ -149,22 +170,9 @@ endif;
  * @return array $allcaps including network capabilities.
  */
 function _nr_filter_user_has_cap( $allcaps, $caps, $args, $user ) {
-	global $wpnr_users_with_network_roles;
+	$nr_user = nr_get_user_with_network_roles( $user );
 
-	$site = get_site( $user->get_site_id() );
-	if ( ! $site ) {
-		return $allcaps;
-	}
-
-	$network_id = $site->network_id;
-
-	if ( ! isset( $wpnr_users_with_network_roles[ $user->ID ] ) ) {
-		$wpnr_users_with_network_roles[ $user->ID ] = new WPNR_User_With_Network_Roles( $user->ID, $network_id );
-	} elseif ( $wpnr_users_with_network_roles[ $user->ID ]->get_network_id() !== $network_id ) {
-		$wpnr_users_with_network_roles[ $user->ID ]->for_network( $network_id );
-	}
-
-	return array_merge( $allcaps, $wpnr_users_with_network_roles[ $user->ID ]->network_allcaps );
+	return array_merge( $allcaps, $nr_user->network_allcaps );
 }
 add_filter( 'user_has_cap', '_nr_filter_user_has_cap', 1, 4 );
 

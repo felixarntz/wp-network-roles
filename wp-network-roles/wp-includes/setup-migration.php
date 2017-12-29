@@ -18,6 +18,55 @@ function nr_is_user_network_migration_done() {
 }
 
 /**
+ * Gets the definition data of initial network roles defined by the plugin.
+ *
+ * @since 1.0.0
+ *
+ * @return array Array of associative network role definition arrays.
+ */
+function _nr_get_initial_network_roles() {
+	return array(
+		array(
+			'role'         => 'administrator',
+			'display_name' => __( 'Network Administrator' ),
+			'capabilities' => array_fill_keys( array(
+				'manage_network',
+				'manage_sites',
+				'manage_network_users',
+				'manage_network_themes',
+				'manage_network_plugins',
+				'manage_network_options',
+			), true ),
+		),
+	);
+}
+
+/**
+ * Ensures the initial network roles are populated on a new network.
+ *
+ * @since 1.0.0
+ * @access private
+ *
+ * @param array $network_options All network options for the new network.
+ * @return array Modified network options including the network roles.
+ */
+function _nr_populate_network_roles_on_new_network( $network_options ) {
+	$network_roles = _nr_get_initial_network_roles();
+
+	$network_options['user_roles'] = array();
+
+	foreach ( $network_roles as $network_role ) {
+		$network_options['user_roles'][ $network_role['role'] ] = array(
+			'display_name' => $network_role['display_name'],
+			'capabilities' => $network_role['capabilities'],
+		);
+	}
+
+	return $network_options;
+}
+add_filter( 'populate_network_meta', '_nr_populate_network_roles_on_new_network', 1, 1 );
+
+/**
  * Maybe populates the initial network roles.
  *
  * @since 1.0.0
@@ -28,22 +77,15 @@ function _nr_maybe_populate_initial_network_roles() {
 		return;
 	}
 
-	if ( get_network_role( 'administrator' ) ) {
-		return;
+	$network_roles = _nr_get_initial_network_roles();
+
+	foreach ( $network_roles as $network_role ) {
+		if ( get_network_role( $network_role['role'] ) ) {
+			continue;
+		}
+
+		add_network_role( $network_role['role'], $network_role['display_name'], $network_role['capabilities'] );
 	}
-
-	$site_administrator = get_role( 'administrator' );
-
-	$network_administrator_capabilities = array_fill_keys( array(
-		'manage_network',
-		'manage_sites',
-		'manage_network_users',
-		'manage_network_themes',
-		'manage_network_plugins',
-		'manage_network_options',
-	), true );
-
-	add_network_role( 'administrator', __( 'Network Administrator' ), $network_administrator_capabilities );
 }
 add_action( 'init', '_nr_maybe_populate_initial_network_roles', 1, 0 );
 

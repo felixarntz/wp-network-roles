@@ -84,27 +84,16 @@ add_filter( 'manage_users_custom_column', '_nr_ms_users_column_role', 10, 3 );
  * @since 1.0.0
  * @access private
  *
- * @global array $wpnr_users_with_network_roles Internal storage for user objects with network roles.
- *
  * @param WP_User $user User object.
  * @return array Array of role names.
  */
 function _nr_ms_users_get_role_list( $user ) {
-	global $wpnr_users_with_network_roles;
-
-	$network_id = get_current_network_id();
-
-	if ( ! isset( $wpnr_users_with_network_roles[ $user->ID ] ) ) {
-		$wpnr_users_with_network_roles[ $user->ID ] = new WPNR_User_With_Network_Roles( $user->ID, $network_id );
-	} elseif ( $wpnr_users_with_network_roles[ $user->ID ]->get_network_id() !== $network_id ) {
-		$wpnr_users_with_network_roles[ $user->ID ]->for_network( $network_id );
-	}
+	$nr_user = nr_get_user_with_network_roles( $user );
 
 	$wp_network_roles = wp_network_roles();
 
 	$role_list = array();
-
-	foreach ( $wpnr_users_with_network_roles[ $user->ID ]->network_roles as $role ) {
+	foreach ( $nr_user->network_roles as $role ) {
 		if ( isset( $wp_network_roles->role_names[ $role ] ) ) {
 			$role_list[ $role ] = translate_network_user_role( $wp_network_roles->role_names[ $role ] );
 		}
