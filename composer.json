@@ -22,7 +22,7 @@
     }
   ],
   "support": {
-    "issues": "https://github.com/felixarntz/global-admin/issues"
+    "issues": "https://github.com/felixarntz/wp-network-roles/issues"
   },
   "config": {
     "preferred-install": "dist"
