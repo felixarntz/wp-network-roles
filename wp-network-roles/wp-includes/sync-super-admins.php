@@ -30,7 +30,7 @@ function _nr_filter_super_admins( $pre, $option, $network_id, $default ) {
 	) );
 
 	if ( empty( $users ) ) {
-		if ( nr_is_user_network_migration_done() ) {
+		if ( ! wp_installing() && nr_is_user_network_migration_done() ) {
 			return array();
 		}
 
@@ -101,7 +101,8 @@ function _nr_set_network_administrators_on_new_network( $network_options, $netwo
 		foreach ( $users as $user ) {
 			$nr_user = nr_get_user_with_network_roles( $user );
 
-			$nr_user->add_network_role( 'administrator' );
+			$nr_user->for_network( $network_id );
+			$nr_user->set_network_role( 'administrator' );
 		}
 	}
 
