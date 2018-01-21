@@ -113,6 +113,33 @@ function nr_activate_on_new_network( $network_options ) {
 	return $network_options;
 }
 
+/**
+ * Ensures that this plugin gets activated on a request to update the network-active plugins.
+ *
+ * @since 1.0.0
+ *
+ * @param array $plugins Associative array of `$plugin_basename => $time` pairs.
+ * @return array Modified array.
+ */
+function nr_activate_on_update_request( $plugins ) {
+	$network_options = nr_activate_on_new_network( array(
+		'active_sitewide_plugins' => $plugins,
+	) );
+
+	remove_filter( 'pre_update_site_option_active_sitewide_plugins', 'nr_activate_on_update_request' );
+
+	return $network_options['active_sitewide_plugins'];
+}
+
+/**
+ * Adds the hook to ensure that this plugin gets activated in every network created by WP Multi Network.
+ *
+ * @since 1.0.0
+ */
+function nr_activate_on_new_wpmn_network_add_hook() {
+	add_filter( 'pre_update_site_option_active_sitewide_plugins', 'nr_activate_on_update_request' );
+}
+
 add_action( 'plugins_loaded', 'nr_load_textdomain', 1 );
 
 if ( version_compare( $GLOBALS['wp_version'], '4.9', '<' ) ) {
@@ -121,7 +148,6 @@ if ( version_compare( $GLOBALS['wp_version'], '4.9', '<' ) ) {
 } else {
 	add_action( 'plugins_loaded', 'nr_init' );
 
-	if ( did_action( 'muplugins_loaded' ) ) {
-		add_filter( 'populate_network_meta', 'nr_activate_on_new_network', 10, 1 );
-	}
+	add_filter( 'populate_network_meta', 'nr_activate_on_new_network', 10, 1 );
+	add_action( 'add_network', 'nr_activate_on_new_wpmn_network_add_hook', 10, 0 );
 }
