@@ -2,7 +2,7 @@
   "name": "felixarntz/wp-network-roles",
   "description": "Implements network-wide user roles in WordPress.",
   "version": "1.0.0",
-  "license": "GPL-3.0",
+  "license": "GPL-2.0-or-later",
   "type": "wordpress-plugin",
   "keywords": [
     "wordpress",
