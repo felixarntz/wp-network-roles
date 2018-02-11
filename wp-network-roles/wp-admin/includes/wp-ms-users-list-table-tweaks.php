@@ -42,6 +42,10 @@ add_filter( 'users_list_table_query_args', '_nr_ms_users_override_query_args' );
  * @return array Modified list table columns.
  */
 function _nr_ms_users_override_columns( $columns ) {
+	if ( ! is_network_admin() ) {
+		return $columns;
+	}
+
 	$first_columns = array_slice( $columns, 0, 4 );
 
 	$last_columns = array_diff_key( $columns, $first_columns );
