@@ -56,7 +56,7 @@ add_filter( 'pre_site_option_site_admins', '_nr_filter_super_admins', 10, 4 );
 function _nr_grant_network_administrator( $user_id ) {
 	$nr_user = nr_get_user_with_network_roles( get_userdata( $user_id ) );
 
-	$nr_user->add_network_role( 'administrator' );
+	$nr_user->set_network_role( 'administrator' );
 }
 add_action( 'granted_super_admin', '_nr_grant_network_administrator', 10, 1 );
 
@@ -75,7 +75,7 @@ add_action( 'granted_super_admin', '_nr_grant_network_administrator', 10, 1 );
 function _nr_revoke_network_administrator( $user_id ) {
 	$nr_user = nr_get_user_with_network_roles( get_userdata( $user_id ) );
 
-	$nr_user->remove_network_role( 'administrator' );
+	$nr_user->set_network_role( 'member' );
 }
 add_action( 'revoked_super_admin', '_nr_revoke_network_administrator', 10, 1 );
 
