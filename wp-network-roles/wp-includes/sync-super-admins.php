@@ -58,7 +58,7 @@ function _nr_grant_network_administrator( $user_id ) {
 
 	$nr_user->add_network_role( 'administrator' );
 }
-add_action( 'granted_super_admin', 'wpnr_grant_network_administrator', 10, 1 );
+add_action( 'granted_super_admin', '_nr_grant_network_administrator', 10, 1 );
 
 /**
  * Ensures revoking super admin privileges removes the 'administrator' network role from that user.
@@ -77,7 +77,7 @@ function _nr_revoke_network_administrator( $user_id ) {
 
 	$nr_user->remove_network_role( 'administrator' );
 }
-add_action( 'revoked_super_admin', 'wpnr_revoke_network_administrator', 10, 1 );
+add_action( 'revoked_super_admin', '_nr_revoke_network_administrator', 10, 1 );
 
 /**
  * Ensures granting super admin users on a new network automatically receive the 'administrator' network role.
