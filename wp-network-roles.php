@@ -52,6 +52,12 @@ function nr_init() {
 		require_once NR_PATH . 'wp-network-roles/wp-admin/includes/wp-ms-users-list-table-tweaks.php';
 	}
 
+	if ( defined( 'WP_CLI' ) && WP_CLI ) {
+		require_once NR_PATH . 'wp-network-roles/wp-includes/class-wp-cli-network-role-command.php';
+
+		WP_CLI::add_command( 'network-role', 'WP_CLI_Network_Role_Command' );
+	}
+
 	require_once ABSPATH . 'wp-admin/includes/plugin.php';
 	if ( is_plugin_active( 'wp-multi-network/wpmn-loader.php' ) ) {
 		require_once NR_PATH . 'wp-network-roles/multi-network-compat.php';
