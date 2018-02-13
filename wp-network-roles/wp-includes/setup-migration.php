@@ -30,12 +30,15 @@ function _nr_get_initial_network_roles() {
 			'role'         => 'administrator',
 			'display_name' => _x( 'Administrator', 'network role', 'wp-network-roles' ),
 			'capabilities' => array_fill_keys( array(
+				'create_sites',
+				'delete_sites',
 				'manage_network',
 				'manage_sites',
 				'manage_network_users',
 				'manage_network_themes',
 				'manage_network_plugins',
 				'manage_network_options',
+				'upgrade_network',
 			), true ),
 		),
 		array(
