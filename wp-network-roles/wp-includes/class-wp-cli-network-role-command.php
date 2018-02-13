@@ -34,6 +34,8 @@ if ( ! class_exists( 'WP_CLI_Network_Role_Command' ) ) :
 	 *     # Reset existing roles to their default capabilities.
 	 *     $ wp network-role reset administrator member
 	 *     Success: Reset 2/2 network roles.
+	 *
+	 * @since 1.0.0
 	 */
 	class WP_CLI_Network_Role_Command extends WP_CLI_Command {
 
@@ -43,10 +45,7 @@ if ( ! class_exists( 'WP_CLI_Network_Role_Command' ) ) :
 		 * @since 1.0.0
 		 * @var array
 		 */
-		private $fields = array(
-			'name',
-			'role',
-		);
+		private $fields = array( 'name', 'role' );
 
 		/**
 		 * Lists all network roles.

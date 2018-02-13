@@ -53,8 +53,10 @@ function nr_init() {
 	}
 
 	if ( defined( 'WP_CLI' ) && WP_CLI ) {
+		require_once NR_PATH . 'wp-network-roles/wp-includes/class-wp-cli-network-capabilities-command.php';
 		require_once NR_PATH . 'wp-network-roles/wp-includes/class-wp-cli-network-role-command.php';
 
+		WP_CLI::add_command( 'network-cap', 'WP_CLI_Network_Capabilities_Command' );
 		WP_CLI::add_command( 'network-role', 'WP_CLI_Network_Role_Command' );
 	}
 
