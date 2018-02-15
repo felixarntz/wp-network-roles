@@ -30,6 +30,8 @@ var config = {
 	version: pkg.version,
 	license: 'GNU General Public License v2 (or later)',
 	licenseURI: 'http://www.gnu.org/licenses/gpl-2.0.html',
+	textDomain: pkg.name,
+	domainPath: '/languages/',
 	tags: keywords.join( ', ' ),
 	contributors: [ 'flixos90' ].join( ', ' ),
 	donateLink: false,
@@ -51,6 +53,7 @@ var pluginheader = 	' * Plugin Name: ' + config.pluginName + '\n' +
 					' * License:     ' + config.license + '\n' +
 					' * License URI: ' + config.licenseURI + '\n' +
 					' * Text Domain: ' + config.pluginSlug + '\n' +
+					( config.domainPath ? ' * Domain Path: ' + config.domainPath + '\n' : '' ) +
 					( config.network ? ' * Network:     true' + '\n' : '' ) +
 					' * Tags:        ' + config.tags;
 
