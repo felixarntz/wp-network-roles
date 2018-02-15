@@ -18,6 +18,7 @@ Implements network-wide user roles in WordPress.
 * introduces two initial network roles "administrator" (similar to Super Admin for a network) and "member" (no capabilities, simply a member of a network)
 * synchronizes and migrates super admins to the network role "administrator"
 * adds network relationships to existing users by assigning them the "member" network role
+* includes `wp network-role` and `wp network-cap` commands for WP-CLI
 * supports the WP Multi Network plugin
 
 ## How to install
