@@ -25,7 +25,7 @@
  * @since 1.0.0
  */
 function nr_load_textdomain() {
-	load_plugin_textdomain( 'wp-network-roles' );
+	load_plugin_textdomain( 'wp-network-roles', false, basename( dirname( __FILE__ ) ) . '/languages' );
 }
 
 /**
