@@ -1,5 +1,3 @@
-[![WordPress plugin](https://img.shields.io/wordpress/plugin/v/wp-network-roles.svg?maxAge=2592000)](https://wordpress.org/plugins/wp-network-roles/)
-[![WordPress](https://img.shields.io/wordpress/v/wp-network-roles.svg?maxAge=2592000)](https://wordpress.org/plugins/wp-network-roles/)
 [![Build Status](https://api.travis-ci.org/felixarntz/wp-network-roles.png?branch=master)](https://travis-ci.org/felixarntz/wp-network-roles)
 [![Latest Stable Version](https://poser.pugx.org/felixarntz/wp-network-roles/version)](https://packagist.org/packages/felixarntz/wp-network-roles)
 [![License](https://poser.pugx.org/felixarntz/wp-network-roles/license)](https://packagist.org/packages/felixarntz/wp-network-roles)

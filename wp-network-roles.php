@@ -9,12 +9,13 @@
  * Plugin Name: WP Network Roles
  * Plugin URI:  https://github.com/felixarntz/wp-network-roles
  * Description: Implements network-wide user roles in WordPress.
- * Version:     1.0.0
+ * Version:     1.0.0-beta.1
  * Author:      Felix Arntz
  * Author URI:  https://leaves-and-love.net
  * License:     GNU General Public License v2 (or later)
  * License URI: http://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain: wp-network-roles
+ * Domain Path: /languages/
  * Network:     true
  * Tags:        network roles, network, multisite, multinetwork
  */

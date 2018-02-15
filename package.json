@@ -1,6 +1,6 @@
 {
   "name": "wp-network-roles",
-  "version": "1.0.0",
+  "version": "1.0.0-beta.1",
   "description": "Implements network-wide user roles in WordPress.",
   "keywords": [
     "wordpress",
