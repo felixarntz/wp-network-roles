@@ -37,9 +37,6 @@ function nr_load_textdomain() {
  * @since 1.0.0
  */
 function nr_init() {
-	define( 'NR_PATH', plugin_dir_path( __FILE__ ) );
-	define( 'NR_URL', plugin_dir_url( __FILE__ ) );
-
 	require_once NR_PATH . 'wp-network-roles/wp-includes/class-wp-network-role.php';
 	require_once NR_PATH . 'wp-network-roles/wp-includes/class-wp-network-roles.php';
 	require_once NR_PATH . 'wp-network-roles/wp-includes/class-wpnr-user-with-network-roles.php';
@@ -149,14 +146,34 @@ function nr_activate_on_new_wpmn_network_add_hook() {
 	add_filter( 'pre_update_site_option_active_sitewide_plugins', 'nr_activate_on_update_request' );
 }
 
-add_action( 'plugins_loaded', 'nr_load_textdomain', 1 );
+/**
+ * Hooks in plugin initialization functionality.
+ *
+ * @since 1.0.0
+ */
+function nr_add_hooks() {
+	$file          = wp_normalize_path( __FILE__ );
+	$mu_plugin_dir = wp_normalize_path( WPMU_PLUGIN_DIR );
+	$is_mu_plugin  = (bool) preg_match( '#^' . preg_quote( $mu_plugin_dir, '#' ) . '/#', $file );
+	$plugin_hook   = $is_mu_plugin ? 'muplugins_loaded' : 'plugins_loaded';
 
-if ( version_compare( $GLOBALS['wp_version'], '4.9', '<' ) ) {
-	add_action( 'admin_notices', 'nr_requirements_notice' );
-	add_action( 'network_admin_notices', 'nr_requirements_notice' );
-} else {
-	add_action( 'plugins_loaded', 'nr_init' );
+	add_action( $plugin_hook, 'nr_load_textdomain', 1 );
 
-	add_filter( 'populate_network_meta', 'nr_activate_on_new_network', 10, 1 );
-	add_action( 'add_network', 'nr_activate_on_new_wpmn_network_add_hook', 10, 0 );
+	if ( version_compare( $GLOBALS['wp_version'], '4.9', '<' ) ) {
+		add_action( 'admin_notices', 'nr_requirements_notice' );
+		add_action( 'network_admin_notices', 'nr_requirements_notice' );
+		return;
+	}
+
+	define( 'NR_PATH', plugin_dir_path( __FILE__ ) );
+	define( 'NR_URL', plugin_dir_url( __FILE__ ) );
+
+	add_action( $plugin_hook, 'nr_init' );
+
+	if ( ! $is_mu_plugin ) {
+		add_filter( 'populate_network_meta', 'nr_activate_on_new_network', 10, 1 );
+		add_action( 'add_network', 'nr_activate_on_new_wpmn_network_add_hook', 10, 0 );
+	}
 }
+
+nr_add_hooks();
